@@ -513,17 +513,23 @@ export const DashboardView: React.FC = () => {
             <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center">
               <span className="text-xs text-emerald-700 font-medium">🟢 บรรลุเป้าหมาย</span>
               <div className="text-xl font-bold text-emerald-800">{kpiStats.achieved}</div>
-              <span className="text-[11px] text-emerald-600">{Math.round((kpiStats.achieved / kpiStats.total) * 100)}%</span>
+              <span className="text-[11px] text-emerald-600">
+                {kpiStats.total > 0 ? Math.round((kpiStats.achieved / kpiStats.total) * 100) : 0}%
+              </span>
             </div>
             <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-center">
               <span className="text-xs text-amber-700 font-medium">🟡 ใกล้บรรลุ</span>
               <div className="text-xl font-bold text-amber-800">{kpiStats.nearly}</div>
-              <span className="text-[11px] text-amber-600">{Math.round((kpiStats.nearly / kpiStats.total) * 100)}%</span>
+              <span className="text-[11px] text-amber-600">
+                {kpiStats.total > 0 ? Math.round((kpiStats.nearly / kpiStats.total) * 100) : 0}%
+              </span>
             </div>
             <div className="bg-rose-50 border border-rose-200 rounded-xl p-3 text-center">
               <span className="text-xs text-rose-700 font-medium">🔴 ไม่บรรลุ</span>
               <div className="text-xl font-bold text-rose-800">{kpiStats.notAchieved}</div>
-              <span className="text-[11px] text-rose-600">{Math.round((kpiStats.notAchieved / kpiStats.total) * 100)}%</span>
+              <span className="text-[11px] text-rose-600">
+                {kpiStats.total > 0 ? Math.round((kpiStats.notAchieved / kpiStats.total) * 100) : 0}%
+              </span>
             </div>
           </div>
 

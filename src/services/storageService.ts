@@ -229,7 +229,16 @@ export class StorageService {
     }
   }
 
-  // Reset all to seed data
+  // Clear all operational sample data (projects, tasks, KPIs, calendar, notifications)
+  static clearAllOperationalData(): void {
+    this.saveProjects([]);
+    this.saveTasks([]);
+    this.saveKPIs([]);
+    this.saveCalendarEvents([]);
+    this.saveNotifications([]);
+  }
+
+  // Reset all to clean master schema
   static resetToDefault(): void {
     localStorage.removeItem(STORAGE_KEYS.PROJECTS);
     localStorage.removeItem(STORAGE_KEYS.TASKS);
@@ -238,13 +247,13 @@ export class StorageService {
     localStorage.removeItem(STORAGE_KEYS.WORKGROUPS);
     localStorage.removeItem(STORAGE_KEYS.CALENDAR);
     localStorage.removeItem(STORAGE_KEYS.NOTIFICATIONS);
-    this.saveProjects(initialProjects);
-    this.saveTasks(initialTasks);
-    this.saveKPIs(initialKPIs);
+    this.saveProjects([]);
+    this.saveTasks([]);
+    this.saveKPIs([]);
     this.savePersonnel(initialPersonnel);
     this.saveWorkgroups(initialWorkgroups);
-    this.saveCalendarEvents(initialCalendarEvents);
-    this.saveNotifications(initialNotifications);
+    this.saveCalendarEvents([]);
+    this.saveNotifications([]);
   }
 
   // Export full JSON
@@ -282,7 +291,7 @@ export class StorageService {
     }
   }
 
-  // Firebase Firestore ready interface (mock/bridge)
+  // Firebase Firestore ready interface
   static getFirebaseConfig(): any {
     try {
       const config = localStorage.getItem(STORAGE_KEYS.FIREBASE_CONFIG);

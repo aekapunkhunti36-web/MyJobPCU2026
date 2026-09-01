@@ -35,67 +35,111 @@ export const COLLECTIONS = {
 
 export class FirestoreService {
   /**
-   * Check if database is seeded, if not seed initial hospital data in batch
+   * Check if database structure is initialized (workgroups & personnel), if not initialize master data
    */
   static async initializeDefaultDataIfNeeded(): Promise<boolean> {
     try {
       const workgroupSnap = await getDocs(collection(db, COLLECTIONS.WORKGROUPS));
       if (!workgroupSnap.empty) {
-        console.log('Firestore already contains hospital data.');
+        console.log('Firestore already contains hospital structure.');
         return false;
       }
 
-      console.log('Seeding initial hospital data into Firestore...');
+      console.log('Initializing hospital structure in Firestore...');
       const batch = writeBatch(db);
 
-      // Seed Workgroups
+      // Seed 13 Workgroups
       initialWorkgroups.forEach((wg) => {
         const ref = doc(db, COLLECTIONS.WORKGROUPS, wg.id);
         batch.set(ref, wg);
       });
 
-      // Seed Personnel
+      // Seed 12 Personnel accounts
       initialPersonnel.forEach((person) => {
         const ref = doc(db, COLLECTIONS.PERSONNEL, person.id);
         batch.set(ref, person);
       });
 
-      // Seed Projects
-      initialProjects.forEach((proj) => {
-        const ref = doc(db, COLLECTIONS.PROJECTS, proj.id);
-        batch.set(ref, proj);
-      });
-
-      // Seed Tasks
-      initialTasks.forEach((task) => {
-        const ref = doc(db, COLLECTIONS.TASKS, task.id);
-        batch.set(ref, task);
-      });
-
-      // Seed KPIs
-      initialKPIs.forEach((kpi) => {
-        const ref = doc(db, COLLECTIONS.KPIS, kpi.id);
-        batch.set(ref, kpi);
-      });
-
-      // Seed Calendar Events
-      initialCalendarEvents.forEach((ev) => {
-        const ref = doc(db, COLLECTIONS.CALENDAR_EVENTS, ev.id);
-        batch.set(ref, ev);
-      });
-
-      // Seed Notifications
-      initialNotifications.forEach((notif) => {
-        const ref = doc(db, COLLECTIONS.NOTIFICATIONS, notif.id);
-        batch.set(ref, notif);
-      });
-
       await batch.commit();
-      console.log('Firestore seed data successfully committed.');
+      console.log('Firestore hospital structure successfully initialized.');
       return true;
     } catch (error) {
-      console.error('Error seeding Firestore default data:', error);
+      console.error('Error initializing Firestore master structure:', error);
       return false;
+    }
+  }
+
+  /**
+   * Clear all operational sample data from Firestore (projects, tasks, KPIs, calendar, notifications)
+   */
+  static async clearOperationalFirestoreData(): Promise<void> {
+    try {
+      const collectionsToClear = [
+        COLLECTIONS.PROJECTS,
+        COLLECTIONS.TASKS,
+        COLLECTIONS.KPIS,
+        COLLECTIONS.CALENDAR_EVENTS,
+        COLLECTIONS.NOTIFICATIONS
+      ];
+
+      for (const collName of collectionsToClear) {
+        const snap = await getDocs(collection(db, collName));
+        if (!snap.empty) {
+          const batch = writeBatch(db);
+          snap.forEach((docItem) => {
+            batch.delete(docItem.ref);
+          });
+          await batch.commit();
+        }
+      }
+      console.log('Successfully cleared all operational data from Firestore.');
+    } catch (error) {
+      console.error('Error clearing operational Firestore data:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Complete reset: clear all collections and re-initialize clean 13 workgroups & 12 personnel
+   */
+  static async resetAllFirestoreData(): Promise<void> {
+    try {
+      const allCollections = [
+        COLLECTIONS.PROJECTS,
+        COLLECTIONS.TASKS,
+        COLLECTIONS.KPIS,
+        COLLECTIONS.CALENDAR_EVENTS,
+        COLLECTIONS.NOTIFICATIONS,
+        COLLECTIONS.WORKGROUPS,
+        COLLECTIONS.PERSONNEL
+      ];
+
+      for (const collName of allCollections) {
+        const snap = await getDocs(collection(db, collName));
+        if (!snap.empty) {
+          const batch = writeBatch(db);
+          snap.forEach((docItem) => {
+            batch.delete(docItem.ref);
+          });
+          await batch.commit();
+        }
+      }
+
+      // Re-initialize master workgroups & personnel
+      const batch = writeBatch(db);
+      initialWorkgroups.forEach((wg) => {
+        const ref = doc(db, COLLECTIONS.WORKGROUPS, wg.id);
+        batch.set(ref, wg);
+      });
+      initialPersonnel.forEach((person) => {
+        const ref = doc(db, COLLECTIONS.PERSONNEL, person.id);
+        batch.set(ref, person);
+      });
+      await batch.commit();
+      console.log('Successfully reset all Firestore collections to clean state.');
+    } catch (error) {
+      console.error('Error resetting Firestore collections:', error);
+      throw error;
     }
   }
 
@@ -195,6 +239,19 @@ export class FirestoreService {
 
   static async deleteUser(id: string): Promise<void> {
     await deleteDoc(doc(db, COLLECTIONS.PERSONNEL, id));
+  }
+
+  // --- Workgroups CRUD ---
+  static async saveWorkgroup(workgroup: Workgroup): Promise<void> {
+    await setDoc(doc(db, COLLECTIONS.WORKGROUPS, workgroup.id), workgroup);
+  }
+
+  static async updateWorkgroup(id: string, updates: Partial<Workgroup>): Promise<void> {
+    await updateDoc(doc(db, COLLECTIONS.WORKGROUPS, id), updates);
+  }
+
+  static async deleteWorkgroup(id: string): Promise<void> {
+    await deleteDoc(doc(db, COLLECTIONS.WORKGROUPS, id));
   }
 
   // --- Calendar Events CRUD ---

@@ -97,7 +97,8 @@ interface AppContextType {
   setIsCreateTaskModalOpen: (open: boolean) => void;
   
   // System Tools
-  resetToDefaults: () => void;
+  clearAllOperationalData: () => Promise<void>;
+  resetToDefaults: () => Promise<void>;
   exportDataJSON: () => string;
   importDataJSON: (jsonStr: string) => boolean;
   
@@ -195,24 +196,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setIsFirebaseConnected(true);
 
         unsubProjects = FirestoreService.subscribeToProjects((cloudProjects) => {
-          if (cloudProjects.length > 0) {
-            setProjects(cloudProjects);
-            StorageService.saveProjects(cloudProjects);
-          }
+          setProjects(cloudProjects);
+          StorageService.saveProjects(cloudProjects);
         });
 
         unsubTasks = FirestoreService.subscribeToTasks((cloudTasks) => {
-          if (cloudTasks.length > 0) {
-            setTasks(cloudTasks);
-            StorageService.saveTasks(cloudTasks);
-          }
+          setTasks(cloudTasks);
+          StorageService.saveTasks(cloudTasks);
         });
 
         unsubKPIs = FirestoreService.subscribeToKPIs((cloudKPIs) => {
-          if (cloudKPIs.length > 0) {
-            setKpis(cloudKPIs);
-            StorageService.saveKPIs(cloudKPIs);
-          }
+          setKpis(cloudKPIs);
+          StorageService.saveKPIs(cloudKPIs);
         });
 
         unsubPersonnel = FirestoreService.subscribeToPersonnel((cloudPersonnel) => {
@@ -230,17 +225,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         });
 
         unsubEvents = FirestoreService.subscribeToCalendarEvents((cloudEvents) => {
-          if (cloudEvents.length > 0) {
-            setCalendarEvents(cloudEvents);
-            StorageService.saveCalendarEvents(cloudEvents);
-          }
+          setCalendarEvents(cloudEvents);
+          StorageService.saveCalendarEvents(cloudEvents);
         });
 
         unsubNotifs = FirestoreService.subscribeToNotifications((cloudNotifs) => {
-          if (cloudNotifs.length > 0) {
-            setNotifications(cloudNotifs);
-            StorageService.saveNotifications(cloudNotifs);
-          }
+          setNotifications(cloudNotifs);
+          StorageService.saveNotifications(cloudNotifs);
         });
 
         setSyncStatus('synced');
@@ -966,17 +957,40 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [notifications]);
 
   // System actions
-  const resetToDefaults = () => {
-    StorageService.resetToDefault();
-    setProjects(StorageService.getProjects());
-    setTasks(StorageService.getTasks());
-    setKpis(StorageService.getKPIs());
-    setPersonnel(StorageService.getPersonnel());
-    setWorkgroups(StorageService.getWorkgroups());
-    setCalendarEvents(StorageService.getCalendarEvents());
-    setNotifications(StorageService.getNotifications());
+  const clearAllOperationalData = async () => {
+    StorageService.clearAllOperationalData();
+    setProjects([]);
+    setTasks([]);
+    setKpis([]);
+    setCalendarEvents([]);
+    setNotifications([]);
     setSelectedTaskForDetail(null);
     setSelectedProjectForDetail(null);
+
+    try {
+      await FirestoreService.clearOperationalFirestoreData();
+    } catch (e) {
+      console.warn('Cleared local data, but cloud clear returned:', e);
+    }
+  };
+
+  const resetToDefaults = async () => {
+    StorageService.resetToDefault();
+    setProjects([]);
+    setTasks([]);
+    setKpis([]);
+    setPersonnel(StorageService.getPersonnel());
+    setWorkgroups(StorageService.getWorkgroups());
+    setCalendarEvents([]);
+    setNotifications([]);
+    setSelectedTaskForDetail(null);
+    setSelectedProjectForDetail(null);
+
+    try {
+      await FirestoreService.resetAllFirestoreData();
+    } catch (e) {
+      console.warn('Reset local data, cloud reset returned:', e);
+    }
   };
 
   const exportDataJSON = () => StorageService.exportAllDataJSON();
@@ -1052,6 +1066,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setSelectedTaskForDetail,
         isCreateTaskModalOpen,
         setIsCreateTaskModalOpen,
+        clearAllOperationalData,
         resetToDefaults,
         exportDataJSON,
         importDataJSON,

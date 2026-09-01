@@ -215,19 +215,25 @@ export const KpiView: React.FC = () => {
         <div className="bg-emerald-50/60 p-4 rounded-2xl border border-emerald-200 shadow-xs">
           <span className="text-xs font-bold text-emerald-800 block">🟢 บรรลุเป้าหมาย (≥100%)</span>
           <div className="text-2xl font-black text-emerald-700 mt-1">{stats.achieved}</div>
-          <span className="text-[11px] text-emerald-600 font-semibold">{Math.round((stats.achieved / stats.total) * 100)}% ของตัวชี้วัด</span>
+          <span className="text-[11px] text-emerald-600 font-semibold">
+            {stats.total > 0 ? Math.round((stats.achieved / stats.total) * 100) : 0}% ของตัวชี้วัด
+          </span>
         </div>
 
         <div className="bg-amber-50/60 p-4 rounded-2xl border border-amber-200 shadow-xs">
           <span className="text-xs font-bold text-amber-800 block">🟡 ใกล้บรรลุ (80-99%)</span>
           <div className="text-2xl font-black text-amber-700 mt-1">{stats.nearly}</div>
-          <span className="text-[11px] text-amber-600 font-semibold">{Math.round((stats.nearly / stats.total) * 100)}% ของตัวชี้วัด</span>
+          <span className="text-[11px] text-amber-600 font-semibold">
+            {stats.total > 0 ? Math.round((stats.nearly / stats.total) * 100) : 0}% ของตัวชี้วัด
+          </span>
         </div>
 
         <div className="bg-rose-50/60 p-4 rounded-2xl border border-rose-200 shadow-xs">
           <span className="text-xs font-bold text-rose-800 block">🔴 ไม่บรรลุ (&lt;80%)</span>
           <div className="text-2xl font-black text-rose-700 mt-1">{stats.notAchieved}</div>
-          <span className="text-[11px] text-rose-600 font-semibold">{Math.round((stats.notAchieved / stats.total) * 100)}% ต้องเร่งรัด</span>
+          <span className="text-[11px] text-rose-600 font-semibold">
+            {stats.total > 0 ? Math.round((stats.notAchieved / stats.total) * 100) : 0}% ต้องเร่งรัด
+          </span>
         </div>
       </div>
 
@@ -299,7 +305,24 @@ export const KpiView: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filteredKpis.map(kpi => {
+              {filteredKpis.length === 0 ? (
+                <tr>
+                  <td colSpan={9} className="py-12 px-4 text-center text-slate-500">
+                    <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-2">
+                      <Target className="w-6 h-6" />
+                    </div>
+                    <p className="font-bold text-slate-700">ไม่พบข้อมูลตัวชี้วัด KPI</p>
+                    <p className="text-[11px] text-slate-400 mt-1">คุณสามารถเพิ่มตัวชี้วัดสำหรับปีงบประมาณ 2569 ได้ทันที</p>
+                    <button
+                      onClick={handleOpenAdd}
+                      className="mt-3 px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-xs font-bold transition inline-flex items-center gap-1 cursor-pointer"
+                    >
+                      <Plus className="w-3.5 h-3.5" /> เพิ่มตัวชี้วัดใหม่
+                    </button>
+                  </td>
+                </tr>
+              ) : (
+                filteredKpis.map(kpi => {
                 const wg = workgroups.find(w => w.id === kpi.workgroupId);
 
                 return (
@@ -383,7 +406,7 @@ export const KpiView: React.FC = () => {
                     </td>
                   </tr>
                 );
-              })}
+              }))}
             </tbody>
           </table>
         </div>

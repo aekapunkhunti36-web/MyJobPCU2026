@@ -21,12 +21,14 @@ import {
   UserCheck,
   AlertCircle,
   Eye,
-  EyeOff
+  EyeOff,
+  Trash2
 } from 'lucide-react';
 
 export const SettingsView: React.FC = () => {
   const { 
     currentUser, 
+    clearAllOperationalData,
     resetToDefaults, 
     exportDataJSON, 
     importDataJSON, 
@@ -46,6 +48,8 @@ export const SettingsView: React.FC = () => {
   const [syncFeedback, setSyncFeedback] = useState<string | null>(null);
   const [importJsonText, setImportJsonText] = useState('');
   const [importStatus, setImportStatus] = useState<string | null>(null);
+  const [isClearingData, setIsClearingData] = useState(false);
+  const [clearFeedback, setClearFeedback] = useState<string | null>(null);
 
   const handleManualSync = async () => {
     setIsSyncing(true);
@@ -120,10 +124,33 @@ export const SettingsView: React.FC = () => {
     }
   };
 
-  const handleReset = () => {
-    if (window.confirm('คำเตือน: คุณต้องการรีเซ็ตข้อมูลทั้งหมดกลับเป็นค่าเริ่มต้นของโรงพยาบาลโพนนาแก้ว ใช่หรือไม่? ข้อมูลที่แก้ไขจะถูกแทนที่ด้วยข้อมูลตั้งต้น 13 กลุ่มงาน')) {
-      resetToDefaults();
-      alert('รีเซ็ตข้อมูลกลับสู่ค่ามาตรฐานเรียบร้อยแล้ว');
+  const handleClearOperationalData = async () => {
+    if (window.confirm('ยืนยันการลบข้อมูลตัวอย่างทั้งหมด: คุณต้องการลบโครงการ, ภารกิจ, ตัวชี้วัด KPI, ปฏิทิน และการแจ้งเตือนทั้งหมด เพื่อเริ่มต้นบันทึกข้อมูลจริงของโรงพยาบาล ใช่หรือไม่? (โครงสร้าง 13 กลุ่มงานและบัญชีผู้ใช้งานจะยังคงอยู่)')) {
+      setIsClearingData(true);
+      setClearFeedback(null);
+      try {
+        await clearAllOperationalData();
+        setClearFeedback('ลบข้อมูลตัวอย่างทั้งหมดเรียบร้อยแล้ว ระบบพร้อมสำหรับการบันทึกข้อมูลจริง');
+      } catch (err) {
+        console.error('Error clearing data:', err);
+        setClearFeedback('เกิดข้อผิดพลาดในการลบข้อมูลบางส่วน');
+      } finally {
+        setIsClearingData(false);
+      }
+    }
+  };
+
+  const handleReset = async () => {
+    if (window.confirm('คำเตือน: คุณต้องการรีเซ็ตระบบและล้างข้อมูลทั้งหมด ใช่หรือไม่? โครงการ ภารกิจ และ KPI ทั้งหมดจะถูกล้าง')) {
+      setIsClearingData(true);
+      try {
+        await resetToDefaults();
+        setClearFeedback('รีเซ็ตระบบเป็นสถานะว่างพร้อมใช้งานใหม่เรียบร้อยแล้ว');
+      } catch (err) {
+        console.error('Error during reset:', err);
+      } finally {
+        setIsClearingData(false);
+      }
     }
   };
 
@@ -454,16 +481,23 @@ export const SettingsView: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+        {clearFeedback && (
+          <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs flex items-center gap-2">
+            <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>{clearFeedback}</span>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
           {/* Export JSON */}
           <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex flex-col justify-between">
             <div>
               <h3 className="text-xs font-bold text-slate-800 mb-1 flex items-center gap-1.5">
                 <Download className="w-4 h-4 text-teal-600" />
-                <span>สำรองข้อมูลระบบทั้งหมด (JSON Backup)</span>
+                <span>สำรองข้อมูลระบบ (JSON Backup)</span>
               </h3>
               <p className="text-[11px] text-slate-500">
-                ดาวน์โหลดไฟล์ข้อมูล 13 กลุ่มงาน, งานทั้งหมด, KPI, บุคลากร และกิจกรรมปฏิทิน
+                ดาวน์โหลดไฟล์ข้อมูลโครงสร้าง โครงการ ภารกิจ KPI และบุคลากร
               </p>
             </div>
             <button
@@ -471,7 +505,28 @@ export const SettingsView: React.FC = () => {
               className="mt-4 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <Download className="w-4 h-4" />
-              <span>ดาวน์โหลดไฟล์ JSON สำรองข้อมูล</span>
+              <span>ดาวน์โหลดไฟล์ JSON</span>
+            </button>
+          </div>
+
+          {/* Wipe Operational Sample Data */}
+          <div className="p-4 bg-amber-50/60 rounded-xl border border-amber-200 flex flex-col justify-between">
+            <div>
+              <h3 className="text-xs font-bold text-amber-900 mb-1 flex items-center gap-1.5">
+                <Trash2 className="w-4 h-4 text-amber-600" />
+                <span>ลบข้อมูลตัวอย่างทั้งหมด (Wipe Sample Data)</span>
+              </h3>
+              <p className="text-[11px] text-amber-800/90">
+                ล้างข้อมูลโครงการ, ภารกิจ, KPI และปฏิทิน เพื่อเริ่มใช้งานจริง (คงกลุ่มงาน 13 กลุ่มและบุคลากรไว้)
+              </p>
+            </div>
+            <button
+              onClick={handleClearOperationalData}
+              disabled={isClearingData}
+              className="mt-4 px-4 py-2 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <Trash2 className="w-4 h-4" />
+              <span>{isClearingData ? 'กำลังลบข้อมูล...' : 'ลบข้อมูลตัวอย่างทั้งหมด'}</span>
             </button>
           </div>
 
@@ -480,18 +535,19 @@ export const SettingsView: React.FC = () => {
             <div>
               <h3 className="text-xs font-bold text-rose-900 mb-1 flex items-center gap-1.5">
                 <RefreshCw className="w-4 h-4 text-rose-600" />
-                <span>รีเซ็ตระบบกลับสู่ค่าเริ่มต้น (Factory Reset)</span>
+                <span>รีเซ็ตระบบทั้งหมด (Reset to Empty)</span>
               </h3>
               <p className="text-[11px] text-rose-800/80">
-                โหลดข้อมูลชุดมาตรฐาน 13 กลุ่มงาน 20 KPI และ 30 ภารกิจตั้งต้นของ รพ.โพนนาแก้ว ใหม่ทั้งหมด
+                ล้างข้อมูลทั้งหมดในเครื่องและบน Cloud คืนสถานะเริ่มต้นพร้อมบันทึกใหม่
               </p>
             </div>
             <button
               onClick={handleReset}
-              className="mt-4 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
+              disabled={isClearingData}
+              className="mt-4 px-4 py-2 bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <RefreshCw className="w-4 h-4" />
-              <span>รีเซ็ตข้อมูลเริ่มต้น</span>
+              <span>{isClearingData ? 'กำลังดำเนินการ...' : 'รีเซ็ตระบบ'}</span>
             </button>
           </div>
         </div>
