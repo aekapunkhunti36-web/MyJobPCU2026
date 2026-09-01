@@ -1,0 +1,133 @@
+{
+  "$schema": "https://firebase.google.com/schemas/blueprint/v1/firestore.json",
+  "entities": {
+    "projects": {
+      "type": "collection",
+      "description": "Hospital primary care project proposals and tracking documents",
+      "schema": {
+        "properties": {
+          "id": { "type": "string" },
+          "projectCode": { "type": "string" },
+          "title": { "type": "string" },
+          "fiscalYear": { "type": "number" },
+          "workgroupId": { "type": "string" },
+          "leaderId": { "type": "string" },
+          "type": { "type": "string" },
+          "status": { "type": "string" },
+          "budget": { "type": "number" },
+          "budgetSpent": { "type": "number" },
+          "startDate": { "type": "string" },
+          "endDate": { "type": "string" },
+          "description": { "type": "string" },
+          "objectives": { "type": "array" },
+          "targetGroups": { "type": "array" },
+          "expectedOutcomes": { "type": "array" },
+          "kpiIds": { "type": "array" },
+          "files": { "type": "array" },
+          "createdAt": { "type": "string" },
+          "updatedAt": { "type": "string" }
+        },
+        "required": ["id", "projectCode", "title", "fiscalYear", "workgroupId", "type", "status"]
+      }
+    },
+    "tasks": {
+      "type": "collection",
+      "description": "Assigned tasks and mission follow-ups for hospital staff",
+      "schema": {
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "workgroupId": { "type": "string" },
+          "assigneeId": { "type": "string" },
+          "creatorId": { "type": "string" },
+          "dueDate": { "type": "string" },
+          "status": { "type": "string" },
+          "priority": { "type": "string" },
+          "tags": { "type": "array" },
+          "createdAt": { "type": "string" },
+          "updatedAt": { "type": "string" }
+        },
+        "required": ["id", "title", "workgroupId", "assigneeId", "status", "dueDate"]
+      }
+    },
+    "kpis": {
+      "type": "collection",
+      "description": "Hospital KPI indicators and quarterly progress",
+      "schema": {
+        "properties": {
+          "id": { "type": "string" },
+          "code": { "type": "string" },
+          "name": { "type": "string" },
+          "workgroupId": { "type": "string" },
+          "target": { "type": "number" },
+          "current": { "type": "number" },
+          "unit": { "type": "string" },
+          "period": { "type": "string" }
+        },
+        "required": ["id", "code", "name", "workgroupId", "target", "current"]
+      }
+    },
+    "personnel": {
+      "type": "collection",
+      "description": "Hospital staff and healthcare personnel records",
+      "schema": {
+        "properties": {
+          "id": { "type": "string" },
+          "username": { "type": "string" },
+          "name": { "type": "string" },
+          "position": { "type": "string" },
+          "workgroupId": { "type": "string" },
+          "responsibility": { "type": "string" },
+          "email": { "type": "string" },
+          "phone": { "type": "string" },
+          "role": { "type": "string" }
+        },
+        "required": ["id", "name", "workgroupId", "role"]
+      }
+    },
+    "workgroups": {
+      "type": "collection",
+      "description": "13 primary care service workgroups",
+      "schema": {
+        "properties": {
+          "id": { "type": "string" },
+          "code": { "type": "string" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "leaderId": { "type": "string" },
+          "color": { "type": "string" }
+        },
+        "required": ["id", "code", "name"]
+      }
+    },
+    "calendar_events": {
+      "type": "collection",
+      "description": "Hospital calendar and primary care events",
+      "schema": {
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "date": { "type": "string" },
+          "type": { "type": "string" },
+          "workgroupId": { "type": "string" }
+        },
+        "required": ["id", "title", "date"]
+      }
+    },
+    "notifications": {
+      "type": "collection",
+      "description": "Staff alerts and system notifications",
+      "schema": {
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "message": { "type": "string" },
+          "createdAt": { "type": "string" },
+          "read": { "type": "boolean" }
+        },
+        "required": ["id", "title", "message"]
+      }
+    }
+  }
+}

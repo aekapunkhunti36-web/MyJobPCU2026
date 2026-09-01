@@ -1,0 +1,6 @@
+{
+  "name": "ระบบบริหารงานกลุ่มงานบริการด้านปฐมภูมิและองค์รวม โรงพยาบาลโพนนาแก้ว",
+  "description": "ระบบบริหารจัดการภารกิจ ติดตามงาน KPI ปฏิทิน หลักฐาน และบุคลากร กลุ่มงานบริการด้านปฐมภูมิและองค์รวม โรงพยาบาลโพนนาแก้ว (Primary Care & Holistic Service Management System)",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
