@@ -308,6 +308,21 @@ export const LoginView: React.FC = () => {
                   <div className="grid grid-cols-2 sm:grid-cols-2 gap-2 mt-2">
                     <button
                       type="button"
+                      onClick={() => handleQuickSelect('trinpong.t', 'password123')}
+                      className={`p-2 text-left rounded-lg border text-xs transition flex flex-col ${
+                        username === 'trinpong.t' 
+                          ? 'border-emerald-500 bg-emerald-50 text-emerald-900 ring-1 ring-emerald-400' 
+                          : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
+                      }`}
+                    >
+                      <span className="font-semibold text-[11px] text-slate-900 truncate">
+                        🏥 นายตฤณพงศ์ (ผอ.รพ.)
+                      </span>
+                      <span className="text-[10px] text-slate-500 font-mono">User: trinpong.t [Director]</span>
+                    </button>
+
+                    <button
+                      type="button"
                       onClick={() => handleQuickSelect('wisarut.w', 'password123')}
                       className={`p-2 text-left rounded-lg border text-xs transition flex flex-col ${
                         username === 'wisarut.w' 

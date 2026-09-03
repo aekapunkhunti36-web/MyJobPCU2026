@@ -258,6 +258,9 @@ export interface ProjectDocumentChecklist {
   reviewerName: string; // ผู้ตรวจเอกสาร
   reviewerPosition: string; // ตำแหน่ง
   reviewDate: string; // วันที่ตรวจเอกสาร YYYY-MM-DD
+  approverName?: string; // ผู้รับรอง/เห็นชอบ (เช่น นายตฤณพงศ์  ธีรพงศ์ธนสุข)
+  approverPosition?: string; // ตำแหน่ง (ผู้อำนวยการโรงพยาบาลโพนนาแก้ว)
+  approvalDate?: string; // วันที่เห็นชอบ
   updatedAt?: string;
 }
 

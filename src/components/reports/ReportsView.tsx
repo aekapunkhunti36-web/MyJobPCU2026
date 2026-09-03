@@ -356,9 +356,9 @@ export const ReportsView: React.FC = () => {
             <p className="text-slate-500">พยาบาลวิชาชีพชำนาญการ</p>
           </div>
           <div>
-            <p className="text-slate-500 mb-10">ผู้รับรองรายงาน</p>
-            <p className="font-bold text-slate-800">( นพ.วิศรุต วงศ์พิริยะ )</p>
-            <p className="text-slate-500">หัวหน้ากลุ่มงานบริการด้านปฐมภูมิและองค์รวม</p>
+            <p className="text-slate-500 mb-10">ผู้รับรองรายงาน / ผู้อำนวยการ</p>
+            <p className="font-bold text-slate-800">( นายตฤณพงศ์  ธีรพงศ์ธนสุข )</p>
+            <p className="text-slate-500">ผู้อำนวยการโรงพยาบาลโพนนาแก้ว</p>
           </div>
         </div>
 

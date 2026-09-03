@@ -245,6 +245,19 @@ export const initialWorkgroups: Workgroup[] = [
 
 export const initialPersonnel: User[] = [
   {
+    id: 'usr-director',
+    username: 'trinpong.t',
+    password: 'password123',
+    name: 'นายตฤณพงศ์  ธีรพงศ์ธนสุข',
+    position: 'ผู้อำนวยการโรงพยาบาลโพนนาแก้ว',
+    workgroupId: 'wg-13',
+    responsibility: 'ผู้อำนวยการโรงพยาบาลโพนนาแก้ว กำกับนโยบาย การบริหารงานองค์กร และอนุมัติโครงการ',
+    phone: '042-571-234',
+    email: 'director@phonnahospital.go.th',
+    role: 'admin',
+    department: 'ฝ่ายบริหารทั่วไป / ผู้อำนวยการโรงพยาบาล'
+  },
+  {
     id: 'usr-01',
     username: 'wisarut.w',
     password: 'password123',
