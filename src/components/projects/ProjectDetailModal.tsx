@@ -24,9 +24,11 @@ import {
   Paperclip,
   Share2,
   Edit,
-  ArrowUpRight
+  ArrowUpRight,
+  FileCheck2
 } from 'lucide-react';
 import { DocumentPreviewModal } from './DocumentPreviewModal';
+import { ProjectDocumentChecklistModal } from './ProjectDocumentChecklistModal';
 
 interface ProjectDetailModalProps {
   project: Project | null;
@@ -42,6 +44,7 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
   const { workgroups, personnel, updateProject, deleteProjectFile, addProjectFile, tasks, setSelectedTaskForDetail, setActiveTab } = useApp();
   const [activeTab, setActiveTabState] = useState<'overview' | 'documents' | 'budget'>('overview');
   const [previewFile, setPreviewFile] = useState<ProjectFile | null>(null);
+  const [isChecklistOpen, setIsChecklistOpen] = useState(false);
 
   // New File Upload State
   const [isUploading, setIsUploading] = useState(false);
@@ -187,6 +190,14 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
             </div>
 
             <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsChecklistOpen(true)}
+                className="p-2 bg-emerald-600/90 hover:bg-emerald-600 text-white rounded-xl transition text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-sm"
+                title="แบบตรวจเอกสารแนบโครงการ"
+              >
+                <FileCheck2 className="w-4 h-4 text-emerald-100" />
+                <span className="hidden sm:inline">แบบตรวจเอกสาร</span>
+              </button>
               <button
                 onClick={() => onEdit(project)}
                 className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white rounded-xl transition text-xs font-medium flex items-center gap-1.5 cursor-pointer border border-slate-700"
@@ -677,6 +688,15 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
           projectTitle={project.title}
           projectCode={project.projectCode}
           onClose={() => setPreviewFile(null)}
+        />
+      )}
+
+      {/* Project Document Checklist Modal (แบบตรวจเอกสารแนบโครงการ) */}
+      {isChecklistOpen && (
+        <ProjectDocumentChecklistModal
+          isOpen={isChecklistOpen}
+          project={project}
+          onClose={() => setIsChecklistOpen(false)}
         />
       )}
     </>

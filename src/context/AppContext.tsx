@@ -47,6 +47,7 @@ interface AppContextType {
   currentUser: User;
   switchUser: (userId: string) => void;
   userRole: UserRole;
+  isAdmin: boolean;
 
   // Project Actions
   addProject: (projectData: Omit<Project, 'id' | 'createdAt' | 'updatedAt' | 'files'>, initialFiles?: Omit<ProjectFile, 'id' | 'uploadedAt' | 'uploadedBy'>[]) => Project;
@@ -74,6 +75,11 @@ interface AppContextType {
   updateKPI: (kpiId: string, updates: Partial<KPI>) => void;
   deleteKPI: (kpiId: string) => void;
   
+  // Workgroup Actions
+  addWorkgroup: (workgroupData: Omit<Workgroup, 'id'>) => void;
+  updateWorkgroup: (workgroupId: string, updates: Partial<Workgroup>) => void;
+  deleteWorkgroup: (workgroupId: string) => void;
+
   // Personnel Actions
   addPersonnel: (user: Omit<User, 'id'>) => void;
   updatePersonnel: (userId: string, updates: Partial<User>) => void;
@@ -144,6 +150,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
       setSyncStatus('syncing');
       await FirestoreService.initializeDefaultDataIfNeeded();
+      
+      // Push any in-memory state to Firestore to ensure 100% database persistence
+      await Promise.allSettled([
+        ...projects.map(p => FirestoreService.saveProject(p)),
+        ...tasks.map(t => FirestoreService.saveTask(t)),
+        ...kpis.map(k => FirestoreService.saveKPI(k)),
+        ...workgroups.map(w => FirestoreService.saveWorkgroup(w)),
+        ...personnel.map(u => FirestoreService.saveUser(u)),
+        ...calendarEvents.map(ev => FirestoreService.saveCalendarEvent(ev)),
+        ...notifications.map(n => FirestoreService.saveNotification(n))
+      ]);
+
       setSyncStatus('synced');
       setIsFirebaseConnected(true);
     } catch (err) {
@@ -173,11 +191,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setCalendarEvents(loadedEvents);
     setNotifications(loadedNotifs);
     
+    // Restore session on refresh so data and active work are not lost
     if (session.isAuthenticated && session.userId) {
-      setCurrentUserId(session.userId);
       setIsAuthenticated(true);
+      setCurrentUserId(session.userId);
     } else {
-      setCurrentUserId(loadedUserId);
+      setIsAuthenticated(false);
+      if (session.userId) {
+        setCurrentUserId(session.userId);
+      } else {
+        setCurrentUserId(loadedUserId);
+      }
     }
 
     // 2. Initialize Firestore default data if needed and subscribe in real-time
@@ -196,24 +220,51 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setIsFirebaseConnected(true);
 
         unsubProjects = FirestoreService.subscribeToProjects((cloudProjects) => {
-          setProjects(cloudProjects);
-          StorageService.saveProjects(cloudProjects);
+          if (cloudProjects.length > 0) {
+            setProjects(cloudProjects);
+            StorageService.saveProjects(cloudProjects);
+          } else {
+            // If cloud returned empty, ensure local projects are uploaded
+            const localPrjs = StorageService.getProjects();
+            if (localPrjs.length > 0) {
+              localPrjs.forEach(p => FirestoreService.saveProject(p).catch(() => {}));
+            }
+          }
         });
 
         unsubTasks = FirestoreService.subscribeToTasks((cloudTasks) => {
-          setTasks(cloudTasks);
-          StorageService.saveTasks(cloudTasks);
+          if (cloudTasks.length > 0) {
+            setTasks(cloudTasks);
+            StorageService.saveTasks(cloudTasks);
+          } else {
+            const localTsks = StorageService.getTasks();
+            if (localTsks.length > 0) {
+              localTsks.forEach(t => FirestoreService.saveTask(t).catch(() => {}));
+            }
+          }
         });
 
         unsubKPIs = FirestoreService.subscribeToKPIs((cloudKPIs) => {
-          setKpis(cloudKPIs);
-          StorageService.saveKPIs(cloudKPIs);
+          if (cloudKPIs.length > 0) {
+            setKpis(cloudKPIs);
+            StorageService.saveKPIs(cloudKPIs);
+          } else {
+            const localKpisData = StorageService.getKPIs();
+            if (localKpisData.length > 0) {
+              localKpisData.forEach(k => FirestoreService.saveKPI(k).catch(() => {}));
+            }
+          }
         });
 
         unsubPersonnel = FirestoreService.subscribeToPersonnel((cloudPersonnel) => {
           if (cloudPersonnel.length > 0) {
             setPersonnel(cloudPersonnel);
             StorageService.savePersonnel(cloudPersonnel);
+          } else {
+            const localUsers = StorageService.getPersonnel();
+            if (localUsers.length > 0) {
+              localUsers.forEach(u => FirestoreService.saveUser(u).catch(() => {}));
+            }
           }
         });
 
@@ -221,17 +272,31 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           if (cloudWorkgroups.length > 0) {
             setWorkgroups(cloudWorkgroups);
             StorageService.saveWorkgroups(cloudWorkgroups);
+          } else {
+            const localWgs = StorageService.getWorkgroups();
+            if (localWgs.length > 0) {
+              localWgs.forEach(w => FirestoreService.saveWorkgroup(w).catch(() => {}));
+            }
           }
         });
 
         unsubEvents = FirestoreService.subscribeToCalendarEvents((cloudEvents) => {
-          setCalendarEvents(cloudEvents);
-          StorageService.saveCalendarEvents(cloudEvents);
+          if (cloudEvents.length > 0) {
+            setCalendarEvents(cloudEvents);
+            StorageService.saveCalendarEvents(cloudEvents);
+          } else {
+            const localEvs = StorageService.getCalendarEvents();
+            if (localEvs.length > 0) {
+              localEvs.forEach(e => FirestoreService.saveCalendarEvent(e).catch(() => {}));
+            }
+          }
         });
 
         unsubNotifs = FirestoreService.subscribeToNotifications((cloudNotifs) => {
-          setNotifications(cloudNotifs);
-          StorageService.saveNotifications(cloudNotifs);
+          if (cloudNotifs.length > 0) {
+            setNotifications(cloudNotifs);
+            StorageService.saveNotifications(cloudNotifs);
+          }
         });
 
         setSyncStatus('synced');
@@ -270,6 +335,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [personnel, currentUserId]);
 
   const userRole = currentUser?.role || 'admin';
+  const isAdmin = currentUser?.role === 'admin';
 
   const switchUser = (userId: string) => {
     setCurrentUserId(userId);
@@ -862,6 +928,41 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     FirestoreService.deleteKPI(kpiId).catch(e => console.warn('Firestore deleteKPI err:', e));
   };
 
+  // Workgroup Handlers
+  const addWorkgroup = (workgroupData: Omit<Workgroup, 'id'>) => {
+    const newWg: Workgroup = {
+      ...workgroupData,
+      id: `wg-${Date.now().toString().slice(-4)}`
+    };
+    const updated = [...workgroups, newWg];
+    setWorkgroups(updated);
+    StorageService.saveWorkgroups(updated);
+    FirestoreService.saveWorkgroup(newWg).catch(e => console.warn('Firestore saveWorkgroup err:', e));
+  };
+
+  const updateWorkgroup = (workgroupId: string, updates: Partial<Workgroup>) => {
+    let updatedSingleWg: Workgroup | undefined;
+    const updated = workgroups.map(w => {
+      if (w.id === workgroupId) {
+        updatedSingleWg = { ...w, ...updates };
+        return updatedSingleWg;
+      }
+      return w;
+    });
+    setWorkgroups(updated);
+    StorageService.saveWorkgroups(updated);
+    if (updatedSingleWg) {
+      FirestoreService.updateWorkgroup(workgroupId, updates).catch(e => console.warn('Firestore updateWorkgroup err:', e));
+    }
+  };
+
+  const deleteWorkgroup = (workgroupId: string) => {
+    const updated = workgroups.filter(w => w.id !== workgroupId);
+    setWorkgroups(updated);
+    StorageService.saveWorkgroups(updated);
+    FirestoreService.deleteWorkgroup(workgroupId).catch(e => console.warn('Firestore deleteWorkgroup err:', e));
+  };
+
   // Personnel Handlers
   const addPersonnel = (userData: Omit<User, 'id'>) => {
     const newUser: User = {
@@ -1032,6 +1133,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         currentUser,
         switchUser,
         userRole,
+        isAdmin,
         addProject,
         updateProject,
         deleteProject,
@@ -1052,6 +1154,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         addKPI,
         updateKPI,
         deleteKPI,
+        addWorkgroup,
+        updateWorkgroup,
+        deleteWorkgroup,
         addPersonnel,
         updatePersonnel,
         deletePersonnel,

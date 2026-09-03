@@ -343,6 +343,17 @@ export const EvidenceView: React.FC = () => {
                     >
                       <ExternalLink className="w-3.5 h-3.5" />
                     </button>
+                    <button
+                      onClick={() => {
+                        if (window.confirm(`คุณแน่ใจหรือไม่ว่าต้องการลบไฟล์ "${item.attachment.name}"?`)) {
+                          deleteTaskAttachment(item.taskId, item.attachment.id);
+                        }
+                      }}
+                      className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition"
+                      title="ลบเอกสารหลักฐาน"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 </div>
 

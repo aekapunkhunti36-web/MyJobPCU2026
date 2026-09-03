@@ -15,7 +15,8 @@ import {
   Eye,
   Download,
   ArrowRight,
-  MoreVertical
+  MoreVertical,
+  FileCheck2
 } from 'lucide-react';
 
 interface ProjectCardProps {
@@ -23,13 +24,15 @@ interface ProjectCardProps {
   onSelect: (project: Project) => void;
   onEdit: (project: Project) => void;
   onPreviewDoc: (file: ProjectFile, project: Project) => void;
+  onOpenChecklist?: (project: Project) => void;
 }
 
 export const ProjectCard: React.FC<ProjectCardProps> = ({
   project,
   onSelect,
   onEdit,
-  onPreviewDoc
+  onPreviewDoc,
+  onOpenChecklist
 }) => {
   const { workgroups, personnel } = useApp();
 
@@ -189,13 +192,29 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
           <span>{project.startDate} ถึง {project.endDate}</span>
         </div>
 
-        <button
-          onClick={() => onSelect(project)}
-          className="font-semibold text-emerald-700 hover:text-emerald-800 flex items-center gap-1 transition cursor-pointer"
-        >
-          ดูรายละเอียด
-          <ArrowRight className="w-3.5 h-3.5" />
-        </button>
+        <div className="flex items-center gap-2">
+          {onOpenChecklist && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenChecklist(project);
+              }}
+              className="text-slate-500 hover:text-emerald-700 p-1.5 rounded-lg hover:bg-emerald-50 transition cursor-pointer flex items-center gap-1 text-[11px] font-semibold"
+              title="แบบตรวจเอกสารแนบโครงการ"
+            >
+              <FileCheck2 className="w-3.5 h-3.5 text-emerald-600" />
+              <span className="hidden sm:inline">ตรวจเอกสาร</span>
+            </button>
+          )}
+
+          <button
+            onClick={() => onSelect(project)}
+            className="font-semibold text-emerald-700 hover:text-emerald-800 flex items-center gap-1 transition cursor-pointer"
+          >
+            ดูรายละเอียด
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
 
     </div>

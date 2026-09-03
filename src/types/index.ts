@@ -193,6 +193,74 @@ export interface ProjectFile {
   notes?: string;
 }
 
+export interface ProjectChecklistItems {
+  // 1. กปท.10
+  kpt10_report: boolean; // แบบรายงานผลการดำเนินแผนงาน/โครงการ/กิจกรรม (กปท.10) - หัวหน้า/ผู้บริหารสูงสุด เป็นผู้รายงาน
+
+  // 2. ซื้อ/จ้าง ร้านค้า
+  shop_receipt: boolean; // ใบเสร็จ/บิลเงินสด โดยเจ้าของร้านค้าเป็นผู้รับเงิน
+  shop_id_card: boolean; // สำเนาบัตรประชาชนเจ้าของร้านค้า
+  shop_inspection_cert: boolean; // ใบตรวจรับ/ บันทึกการตรวจรับ
+  shop_delivery_note: boolean; // ใบส่งของ/ ใบแจ้งหนี้/ ใบส่งมอบงาน/ ใบส่งมอบพัสดุ แล้วแต่กรณี
+  shop_commercial_reg: boolean; // ใบจดทะเบียนพาณิชย์/ เอกสารจดทะเบียนร้านค้า
+  shop_po_agreement: boolean; // ใบสั่งซื้อสั่งจ้าง/ บันทึกข้อตกลงซื้อจ้าง
+  shop_winner_announcement: boolean; // ประกาศผู้ชนะการเสนอราคา
+  shop_approval_report: boolean; // รายงานผลการพิจารณาและอนุมัติสั่งซื้อสั่งจ้าง
+  shop_price_agreement: boolean; // บันทึกการตกลงราคา
+  shop_quotation: boolean; // ใบเสนอราคา
+  shop_committee_appointment: boolean; // สำเนาคำสั่งแต่งตั้งผู้ตรวจรับ/ คณะกรรมการตรวจรับพัสดุ (ถ้ามี)
+  shop_egp_report: boolean; // รายงานขอซื้อขอจ้าง (จากระบบ e-GP)
+  shop_tor_note: boolean; // บันทึกข้อความ ขอความเห็นชอบรายละเอียดคุณลักษณะฯ (Tor)
+  shop_tor_draft: boolean; // การจัดทำร่างกำหนดคุณลักษณะเฉพาะของพัสดุ
+  shop_tor_appointment: boolean; // คำสั่งแต่งตั้งผู้กำหนดคุณลักษณะ/ คณะกรรมการกำหนดคุณลักษณะ (Tor)
+
+  // จ้างประกอบอาหาร อาหารว่าง (มิใช่ซื้อจ้างร้านค้า)
+  food_receipt: boolean; // ใบเสร็จ/บิลเงินสด/ใบสำคัญรับเงิน
+  food_id_card: boolean; // สำเนาบัตรประชาชนของผู้ประกอบอาหาร อาหารว่าง
+  food_inspection_cert: boolean; // ใบตรวจรับ/ บันทึกการตรวจรับ
+
+  // กรณี ค่าสมนาคุณวิทยากร
+  speaker_receipt: boolean; // ใบสำคัญรับเงิน
+  speaker_id_card: boolean; // สำเนาบัตรประชาชนของวิทยากร
+  speaker_acceptance: boolean; // ใบตอบรับการเป็นวิทยากร
+  speaker_invitation_letter: boolean; // หนังสือขอความอนุเคราะห์เป็นวิทยากร****
+  speaker_inspection_cert: boolean; // ใบตรวจรับ/ บันทึกการตรวจรับ
+
+  // 3. รูปถ่ายกิจกรรมตามโครงการและรูปป้ายโครงการ
+  activity_photos: boolean;
+
+  // 4. รายชื่อผู้เข้าร่วมโครงการ พร้อมเลขบัตรประชาชนผู้เข้าร่วมโครงการ
+  attendance_with_id: boolean;
+
+  // 5. สำเนาโครงการและกำหนดการ
+  project_copy_schedule: boolean;
+
+  // 6. บันทึกข้อความขออนุมัติจัดทำโครงการ
+  approval_memo: boolean;
+}
+
+export interface ProjectDocumentChecklist {
+  id?: string;
+  projectId?: string;
+  projectCode?: string;
+  fundName: string; // เช่น กองทุนหลักประกันสุขภาพเทศบาลตำบลนาแก้ว
+  agencyName: string; // หน่วยงาน เช่น โรงพยาบาลโพนนาแก้ว
+  projectTitle: string; // ชื่อโครงการ
+  year: string; // ปี พ.ศ. เช่น 2568, 2569
+  activities: string[]; // รายการกิจกรรม (1 - 7 หรือเพิ่มเติม)
+  totalBudget: number; // งบประมาณทั้งสิ้น (บาท)
+  spentBudget: number; // งบประมาณที่ใช้ (บาท)
+  remainingBudget: number; // งบประมาณคงเหลือ/ส่งคืนกองทุนฯ (บาท)
+  returnItemsDescription?: string; // รายการส่งคืน
+  items: ProjectChecklistItems;
+  reviewResult: 'pass' | 'amend' | 'pending'; // ผลการตรวจ
+  notes?: string; // ข้อสังเกต / หมายเหตุ
+  reviewerName: string; // ผู้ตรวจเอกสาร
+  reviewerPosition: string; // ตำแหน่ง
+  reviewDate: string; // วันที่ตรวจเอกสาร YYYY-MM-DD
+  updatedAt?: string;
+}
+
 export interface Project {
   id: string;
   projectCode: string; // e.g. "PRJ-69-001"
@@ -218,6 +286,7 @@ export interface Project {
   linkedTaskIds?: string[];
   progress: number;        // 0 - 100%
   files: ProjectFile[];
+  checklist?: ProjectDocumentChecklist;
   notes?: string;
   createdAt: string;
   updatedAt: string;

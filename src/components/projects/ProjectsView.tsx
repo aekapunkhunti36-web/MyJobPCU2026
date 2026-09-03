@@ -23,12 +23,14 @@ import {
   Edit,
   Trash2,
   Calendar,
-  ExternalLink
+  ExternalLink,
+  FileCheck2
 } from 'lucide-react';
 import { ProjectCard } from './ProjectCard';
 import { ProjectDetailModal } from './ProjectDetailModal';
 import { ProjectFormModal } from './ProjectFormModal';
 import { DocumentPreviewModal } from './DocumentPreviewModal';
+import { ProjectDocumentChecklistModal } from './ProjectDocumentChecklistModal';
 
 export const ProjectsView: React.FC = () => {
   const { 
@@ -53,6 +55,8 @@ export const ProjectsView: React.FC = () => {
   // Modals
   const [projectToEdit, setProjectToEdit] = useState<Project | null>(null);
   const [previewDocData, setPreviewDocData] = useState<{ file: ProjectFile; project: Project } | null>(null);
+  const [isChecklistModalOpen, setIsChecklistModalOpen] = useState(false);
+  const [checklistProject, setChecklistProject] = useState<Project | null>(null);
 
   // Filtered Projects
   const filteredProjects = useMemo(() => {
@@ -216,6 +220,18 @@ export const ProjectsView: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
+          <button
+            onClick={() => {
+              setChecklistProject(null);
+              setIsChecklistModalOpen(true);
+            }}
+            className="px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition cursor-pointer"
+            title="แบบตรวจเอกสารแนบโครงการ (กรณี ส่วนราชการ/หน่วยงานราชการ)"
+          >
+            <FileCheck2 className="w-4 h-4 text-emerald-700" />
+            <span>แบบตรวจเอกสารโครงการ</span>
+          </button>
+
           <button
             onClick={handleExportCSV}
             className="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-xs transition cursor-pointer"
@@ -481,6 +497,10 @@ export const ProjectsView: React.FC = () => {
               onSelect={(p) => setSelectedProjectForDetail(p)}
               onEdit={(p) => setProjectToEdit(p)}
               onPreviewDoc={(file, p) => setPreviewDocData({ file, project: p })}
+              onOpenChecklist={(p) => {
+                setChecklistProject(p);
+                setIsChecklistModalOpen(true);
+              }}
             />
           ))}
         </div>
@@ -587,6 +607,16 @@ export const ProjectsView: React.FC = () => {
                       <td className="py-3.5 px-4 text-right whitespace-nowrap">
                         <div className="flex items-center justify-end gap-1">
                           <button
+                            onClick={() => {
+                              setChecklistProject(project);
+                              setIsChecklistModalOpen(true);
+                            }}
+                            className="p-1.5 text-slate-500 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition cursor-pointer"
+                            title="แบบตรวจเอกสารแนบโครงการ"
+                          >
+                            <FileCheck2 className="w-4 h-4 text-emerald-600" />
+                          </button>
+                          <button
                             onClick={() => setSelectedProjectForDetail(project)}
                             className="p-1.5 text-slate-500 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition cursor-pointer"
                             title="ดูรายละเอียด"
@@ -653,6 +683,18 @@ export const ProjectsView: React.FC = () => {
           projectTitle={previewDocData.project.title}
           projectCode={previewDocData.project.projectCode}
           onClose={() => setPreviewDocData(null)}
+        />
+      )}
+
+      {/* Project Document Checklist Modal */}
+      {isChecklistModalOpen && (
+        <ProjectDocumentChecklistModal
+          isOpen={isChecklistModalOpen}
+          project={checklistProject}
+          onClose={() => {
+            setIsChecklistModalOpen(false);
+            setChecklistProject(null);
+          }}
         />
       )}
 
