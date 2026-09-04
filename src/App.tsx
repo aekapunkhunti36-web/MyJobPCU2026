@@ -13,6 +13,7 @@ import { CalendarView } from './components/calendar/CalendarView';
 import { EvidenceView } from './components/evidence/EvidenceView';
 import { ReportsView } from './components/reports/ReportsView';
 import { NotificationsView } from './components/notifications/NotificationsView';
+import { EpidemView } from './components/epidem/EpidemView';
 import { SettingsView } from './components/settings/SettingsView';
 import { TaskFormModal } from './components/tasks/TaskFormModal';
 import { TaskDetailModal } from './components/tasks/TaskDetailModal';
@@ -46,6 +47,8 @@ const AppContent: React.FC = () => {
         return <EvidenceView />;
       case 'reports':
         return <ReportsView />;
+      case 'epidem':
+        return <EpidemView />;
       case 'notifications':
         return <NotificationsView />;
       case 'settings':

@@ -403,6 +403,71 @@ export const DashboardView: React.FC = () => {
             </div>
           </div>
 
+          {/* External Epidem & TB Systems Quick Access Card */}
+          <div className="bg-gradient-to-br from-emerald-800 via-teal-800 to-slate-900 text-white p-5 rounded-2xl shadow-md relative overflow-hidden flex flex-col justify-between">
+            <div className="relative z-10">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-300 flex items-center gap-1.5">
+                  <Activity className="w-3.5 h-3.5 text-emerald-400" />
+                  ระบบงานภายนอกเชื่อมโยง (3 โปรแกรม)
+                </span>
+                <span className="text-[10px] bg-emerald-500/30 text-emerald-200 px-2 py-0.5 rounded-full border border-emerald-400/30 font-semibold">
+                  พร้อมใช้งาน
+                </span>
+              </div>
+              <h4 className="text-base font-bold mt-2 text-white">ระบบงานระบาดวิทยา & วัณโรค</h4>
+              <p className="text-xs text-emerald-100 mt-1 leading-relaxed">
+                PNK TB-Care • งานนักระบาด SRRT 2026 • NTIProgram.s1
+              </p>
+              
+              <div className="mt-3 grid grid-cols-3 gap-1.5 text-[11px]">
+                <a
+                  href="https://epidem-pnk-hospital.vercel.app/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-emerald-950/50 hover:bg-emerald-700/60 p-1.5 rounded-lg border border-emerald-500/30 text-center transition cursor-pointer"
+                  title="เปิด PNK TB-Care ในแท็บใหม่"
+                >
+                  <span className="font-bold text-emerald-200 block truncate">1. TB-Care</span>
+                  <span className="text-[9px] text-emerald-300">เปิดแท็บ ↗</span>
+                </a>
+                <a
+                  href="https://epidem-pnk-hospital-2026.vercel.app/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-sky-950/50 hover:bg-sky-700/60 p-1.5 rounded-lg border border-sky-500/30 text-center transition cursor-pointer"
+                  title="เปิด งานนักระบาดSRRT ในแท็บใหม่"
+                >
+                  <span className="font-bold text-sky-200 block truncate">2. SRRT</span>
+                  <span className="text-[9px] text-sky-300">เปิดแท็บ ↗</span>
+                </a>
+                <a
+                  href="http://103.74.253.10/UIForm/Login.aspx"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-indigo-950/50 hover:bg-indigo-700/60 p-1.5 rounded-lg border border-indigo-500/30 text-center transition cursor-pointer"
+                  title="เปิด NTIProgram.s1 ในแท็บใหม่"
+                >
+                  <span className="font-bold text-indigo-200 block truncate">3. NTIP</span>
+                  <span className="text-[9px] text-indigo-300">เปิดแท็บ ↗</span>
+                </a>
+              </div>
+
+              <div className="mt-3 flex items-center gap-2">
+                <button
+                  onClick={() => setActiveTab('epidem')}
+                  className="flex-1 bg-white hover:bg-emerald-50 text-emerald-900 text-xs font-bold px-3.5 py-2 rounded-xl shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+                >
+                  <Stethoscope className="w-3.5 h-3.5 text-emerald-700" />
+                  <span>เข้าสู่หน้าศูนย์รวมโปรแกรม</span>
+                </button>
+              </div>
+            </div>
+            <div className="absolute -right-2 -bottom-2 opacity-10 text-emerald-200 pointer-events-none">
+              <Activity className="w-24 h-24" />
+            </div>
+          </div>
+
         </div>
 
       </div>

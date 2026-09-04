@@ -14,7 +14,8 @@ import {
   Bell, 
   Settings, 
   X,
-  Stethoscope
+  Stethoscope,
+  Activity
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -37,6 +38,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, setIsMobileOpen 
     { id: 'kpi', label: 'KPI เป้าหมาย', icon: Target },
     { id: 'evidence', label: 'หลักฐานงาน', icon: Paperclip },
     { id: 'reports', label: 'รายงานสรุป', icon: FileText },
+    { id: 'epidem', label: 'ระบบระบาดวิทยา', icon: Activity, badge: 'Epidem', badgeColor: 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' },
     { id: 'notifications', label: 'การแจ้งเตือน', icon: Bell, badge: unreadNotificationsCount > 0 ? unreadNotificationsCount : undefined, badgeColor: 'bg-red-500 text-white animate-pulse' },
     { id: 'settings', label: 'ตั้งค่าระบบ', icon: Settings },
   ];
@@ -91,6 +93,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, setIsMobileOpen 
               <button
                 key={item.id}
                 onClick={() => handleNavClick(item.id)}
+                title={item.label}
                 className={`
                   w-full flex items-center justify-between p-2.5 rounded-lg text-sm font-medium transition-colors text-left cursor-pointer
                   ${isActive 

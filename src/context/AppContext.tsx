@@ -16,6 +16,7 @@ export type NavTab =
   | 'evidence' 
   | 'reports' 
   | 'notifications' 
+  | 'epidem'
   | 'settings';
 
 interface AppContextType {
@@ -118,7 +119,22 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [activeTab, setActiveTab] = useState<NavTab>('dashboard');
+  const [activeTab, setActiveTabState] = useState<NavTab>(() => {
+    const saved = StorageService.getActiveTab() as NavTab | null;
+    const validTabs: NavTab[] = [
+      'dashboard', 'projects', 'tasks', 'workgroups', 'personnel',
+      'calendar', 'kpi', 'evidence', 'reports', 'epidem', 'notifications', 'settings'
+    ];
+    if (saved && validTabs.includes(saved)) {
+      return saved;
+    }
+    return 'dashboard';
+  });
+
+  const setActiveTab = (tab: NavTab) => {
+    setActiveTabState(tab);
+    StorageService.saveActiveTab(tab);
+  };
   
   const [projects, setProjects] = useState<Project[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -287,6 +303,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           } else {
             const localEvs = StorageService.getCalendarEvents();
             if (localEvs.length > 0) {
+              setCalendarEvents(localEvs);
               localEvs.forEach(e => FirestoreService.saveCalendarEvent(e).catch(() => {}));
             }
           }
@@ -1002,34 +1019,40 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const addCalendarEvent = (eventData: Omit<CalendarEvent, 'id'>) => {
     const newEvent: CalendarEvent = {
       ...eventData,
-      id: `ev-${Date.now().toString().slice(-5)}`
+      id: `ev-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`
     };
-    const updated = [...calendarEvents, newEvent];
-    setCalendarEvents(updated);
-    StorageService.saveCalendarEvents(updated);
+    setCalendarEvents(prev => {
+      const updated = [...prev, newEvent];
+      StorageService.saveCalendarEvents(updated);
+      return updated;
+    });
     FirestoreService.saveCalendarEvent(newEvent).catch(e => console.warn('Firestore saveCal err:', e));
   };
 
   const updateCalendarEvent = (eventId: string, updates: Partial<CalendarEvent>) => {
     let updatedSingleEvent: CalendarEvent | undefined;
-    const updated = calendarEvents.map(e => {
-      if (e.id === eventId) {
-        updatedSingleEvent = { ...e, ...updates };
-        return updatedSingleEvent;
-      }
-      return e;
+    setCalendarEvents(prev => {
+      const updated = prev.map(e => {
+        if (e.id === eventId) {
+          updatedSingleEvent = { ...e, ...updates };
+          return updatedSingleEvent;
+        }
+        return e;
+      });
+      StorageService.saveCalendarEvents(updated);
+      return updated;
     });
-    setCalendarEvents(updated);
-    StorageService.saveCalendarEvents(updated);
     if (updatedSingleEvent) {
       FirestoreService.saveCalendarEvent(updatedSingleEvent).catch(e => console.warn('Firestore updateCal err:', e));
     }
   };
 
   const deleteCalendarEvent = (eventId: string) => {
-    const updated = calendarEvents.filter(e => e.id !== eventId);
-    setCalendarEvents(updated);
-    StorageService.saveCalendarEvents(updated);
+    setCalendarEvents(prev => {
+      const updated = prev.filter(e => e.id !== eventId);
+      StorageService.saveCalendarEvents(updated);
+      return updated;
+    });
     FirestoreService.deleteCalendarEvent(eventId).catch(e => console.warn('Firestore deleteCal err:', e));
   };
 

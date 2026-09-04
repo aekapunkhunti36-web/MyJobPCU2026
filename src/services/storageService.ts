@@ -12,7 +12,9 @@ const STORAGE_KEYS = {
   CURRENT_USER_ID: 'phonnahospital_current_user_v1',
   AUTH_SESSION: 'phonnahospital_auth_session_v1',
   REMEMBER_USER: 'phonnahospital_remember_user_v1',
-  FIREBASE_CONFIG: 'phonnahospital_firebase_config_v1'
+  FIREBASE_CONFIG: 'phonnahospital_firebase_config_v1',
+  ACTIVE_TAB: 'phonnahospital_active_tab_v1',
+  CALENDAR_VIEW_STATE: 'phonnahospital_calendar_view_v1'
 };
 
 export class StorageService {
@@ -226,6 +228,42 @@ export class StorageService {
       localStorage.setItem(STORAGE_KEYS.REMEMBER_USER, username);
     } else {
       localStorage.removeItem(STORAGE_KEYS.REMEMBER_USER);
+    }
+  }
+
+  // Active Tab persistence to avoid losing view state on browser refresh
+  static getActiveTab(): string | null {
+    try {
+      return localStorage.getItem(STORAGE_KEYS.ACTIVE_TAB) || null;
+    } catch {
+      return null;
+    }
+  }
+
+  static saveActiveTab(tab: string): void {
+    try {
+      localStorage.setItem(STORAGE_KEYS.ACTIVE_TAB, tab);
+    } catch (e) {
+      console.error('Failed to save active tab', e);
+    }
+  }
+
+  // Calendar View State persistence
+  static getCalendarViewState(): { year: number; month: number; selectedDate: string } | null {
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.CALENDAR_VIEW_STATE);
+      if (data) return JSON.parse(data);
+    } catch (e) {
+      console.error('Failed to load calendar view state', e);
+    }
+    return null;
+  }
+
+  static saveCalendarViewState(state: { year: number; month: number; selectedDate: string }): void {
+    try {
+      localStorage.setItem(STORAGE_KEYS.CALENDAR_VIEW_STATE, JSON.stringify(state));
+    } catch (e) {
+      console.error('Failed to save calendar view state', e);
     }
   }
 

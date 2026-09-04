@@ -70,6 +70,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({ setIsMobileOpen }) => {
   const getPageTitle = () => {
     switch (activeTab) {
       case 'dashboard': return '📊 แผงควบคุมภาพรวม (Executive Dashboard)';
+      case 'projects': return '📂 ระบบบันทึกและติดตามโครงการ (Projects)';
       case 'tasks': return '📋 ระบบบริหารจัดการงานและภารกิจทั้งหมด';
       case 'workgroups': return '🗂️ โครงสร้าง 13 กลุ่มงานบริการปฐมภูมิและองค์รวม';
       case 'personnel': return '👥 ทำเนียบบุคลากรและภารกิจรับผิดชอบ';
@@ -77,6 +78,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({ setIsMobileOpen }) => {
       case 'kpi': return '🎯 การกำกับติดตามตัวชี้วัดผลการดำเนินงาน (KPI)';
       case 'evidence': return '📎 คลังจัดเก็บเอกสารและหลักฐานการดำเนินงาน';
       case 'reports': return '📑 ศูนย์จัดทำรายงานและส่งออกข้อมูล (Report Center)';
+      case 'epidem': return '🩺 ระบบงานระบาดวิทยา รพ.โพนนาแก้ว (Epidem System)';
       case 'notifications': return '🔔 ศูนย์การแจ้งเตือนงานและตัวชี้วัด';
       case 'settings': return '⚙️ ตั้งค่าระบบและการเชื่อมต่อ Firebase';
       default: return 'ระบบบริหารงานกลุ่มงานบริการด้านปฐมภูมิและองค์รวม';

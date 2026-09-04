@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
 import { CalendarEvent, EventType } from '../../types';
+import { StorageService } from '../../services/storageService';
 import { 
   Calendar as CalendarIcon, 
   ChevronLeft, 
@@ -21,6 +22,35 @@ import {
   Tag
 } from 'lucide-react';
 
+const getTodayDateParts = () => {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth();
+  const d = now.getDate();
+  const dateStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+  return { y, m, d, dateStr };
+};
+
+const formatThaiDate = (dateStr: string) => {
+  try {
+    const parts = dateStr.split('-');
+    if (parts.length !== 3) return dateStr;
+    const y = parseInt(parts[0], 10);
+    const m = parseInt(parts[1], 10);
+    const d = parseInt(parts[2], 10);
+    if (isNaN(y) || isNaN(m) || isNaN(d)) return dateStr;
+    const dateObj = new Date(y, m - 1, d);
+    const dayNames = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
+    const thaiMonth = [
+      'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+      'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+    ][m - 1] || '';
+    return `วัน${dayNames[dateObj.getDay()]}ที่ ${d} ${thaiMonth} พ.ศ. ${y + 543}`;
+  } catch {
+    return dateStr;
+  }
+};
+
 export const CalendarView: React.FC = () => {
   const { 
     calendarEvents, 
@@ -36,9 +66,22 @@ export const CalendarView: React.FC = () => {
     setActiveTab 
   } = useApp();
 
-  const [currentYear, setCurrentYear] = useState<number>(2026);
-  const [currentMonth, setCurrentMonth] = useState<number>(7); // 0-indexed: 7 = August
-  const [selectedDate, setSelectedDate] = useState<string>('2026-08-15');
+  const todayInfo = useMemo(() => getTodayDateParts(), []);
+  const todayDateStr = todayInfo.dateStr;
+
+  const [currentYear, setCurrentYear] = useState<number>(() => {
+    const saved = StorageService.getCalendarViewState();
+    return saved?.year ?? new Date().getFullYear();
+  });
+  const [currentMonth, setCurrentMonth] = useState<number>(() => {
+    const saved = StorageService.getCalendarViewState();
+    return saved?.month ?? new Date().getMonth();
+  });
+  const [selectedDate, setSelectedDate] = useState<string>(() => {
+    const saved = StorageService.getCalendarViewState();
+    if (saved?.selectedDate) return saved.selectedDate;
+    return getTodayDateParts().dateStr;
+  });
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [workgroupFilter, setWorkgroupFilter] = useState<string>('all');
   const [activeSubView, setActiveSubView] = useState<'month' | 'list'>('month');
@@ -50,7 +93,7 @@ export const CalendarView: React.FC = () => {
   // Form State
   const [title, setTitle] = useState('');
   const [eventType, setEventType] = useState<EventType>('meeting');
-  const [date, setDate] = useState('2026-08-15');
+  const [date, setDate] = useState(todayDateStr);
   const [startTime, setStartTime] = useState('09:00');
   const [endTime, setEndTime] = useState('12:00');
   const [location, setLocation] = useState('');
@@ -66,22 +109,57 @@ export const CalendarView: React.FC = () => {
 
   const daysOfWeekThai = ['อา.', 'จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.'];
 
+  // 5-year range around current year
+  const yearOptions = useMemo(() => {
+    const baseYear = new Date().getFullYear();
+    return [baseYear - 2, baseYear - 1, baseYear, baseYear + 1, baseYear + 2];
+  }, []);
+
   const handlePrevMonth = () => {
-    if (currentMonth === 0) {
-      setCurrentMonth(11);
-      setCurrentYear(currentYear - 1);
-    } else {
-      setCurrentMonth(currentMonth - 1);
+    let newM = currentMonth - 1;
+    let newY = currentYear;
+    if (newM < 0) {
+      newM = 11;
+      newY = currentYear - 1;
     }
+    setCurrentMonth(newM);
+    setCurrentYear(newY);
+    StorageService.saveCalendarViewState({ year: newY, month: newM, selectedDate });
   };
 
   const handleNextMonth = () => {
-    if (currentMonth === 11) {
-      setCurrentMonth(0);
-      setCurrentYear(currentYear + 1);
-    } else {
-      setCurrentMonth(currentMonth + 1);
+    let newM = currentMonth + 1;
+    let newY = currentYear;
+    if (newM > 11) {
+      newM = 0;
+      newY = currentYear + 1;
     }
+    setCurrentMonth(newM);
+    setCurrentYear(newY);
+    StorageService.saveCalendarViewState({ year: newY, month: newM, selectedDate });
+  };
+
+  const handleGoToToday = () => {
+    const { y, m, dateStr } = getTodayDateParts();
+    setCurrentYear(y);
+    setCurrentMonth(m);
+    setSelectedDate(dateStr);
+    StorageService.saveCalendarViewState({ year: y, month: m, selectedDate: dateStr });
+  };
+
+  const handleMonthSelect = (m: number) => {
+    setCurrentMonth(m);
+    StorageService.saveCalendarViewState({ year: currentYear, month: m, selectedDate });
+  };
+
+  const handleYearSelect = (y: number) => {
+    setCurrentYear(y);
+    StorageService.saveCalendarViewState({ year: y, month: currentMonth, selectedDate });
+  };
+
+  const handleDateClick = (dStr: string) => {
+    setSelectedDate(dStr);
+    StorageService.saveCalendarViewState({ year: currentYear, month: currentMonth, selectedDate: dStr });
   };
 
   // Merge calendar events with task deadlines and project deadlines for complete visual schedule
@@ -235,7 +313,7 @@ export const CalendarView: React.FC = () => {
     setEditingEvent(null);
     setTitle('');
     setEventType('meeting');
-    setDate(presetDate || selectedDate || '2026-08-15');
+    setDate(presetDate || selectedDate || todayDateStr);
     setStartTime('09:00');
     setEndTime('12:00');
     setLocation('ห้องประชุม รพ.โพนนาแก้ว');
@@ -318,9 +396,15 @@ export const CalendarView: React.FC = () => {
           <h1 className="text-xl sm:text-2xl font-bold text-slate-800 flex items-center gap-2">
             <span>📅 ปฏิทินปฏิบัติงานและนัดหมายกิจกรรม</span>
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            ลงตารางนัดหมาย ประชุม ลงพื้นที่เยี่ยมบ้าน รณรงค์ และติดตามกำหนดส่งงาน 13 กลุ่มงาน รพ.โพนนาแก้ว
-          </p>
+          <div className="flex flex-wrap items-center gap-2 mt-1">
+            <p className="text-xs sm:text-sm text-slate-500">
+              ลงตารางนัดหมาย ประชุม ลงพื้นที่เยี่ยมบ้าน รณรงค์ และติดตามกำหนดส่งงาน 13 กลุ่มงาน รพ.โพนนาแก้ว
+            </p>
+            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full shadow-2xs">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              วันนี้: {formatThaiDate(todayDateStr)}
+            </span>
+          </div>
         </div>
 
         <div className="flex items-center gap-2">
@@ -439,37 +523,56 @@ export const CalendarView: React.FC = () => {
           {/* Calendar Grid Box */}
           <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-xs p-5 flex flex-col">
             {/* Month Switcher Header */}
-            <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
-              <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-100">
+              <div className="flex flex-wrap items-center gap-2">
                 <div className="p-2 rounded-xl bg-emerald-50 text-emerald-700">
                   <CalendarIcon className="w-5 h-5" />
                 </div>
-                <h2 className="text-lg font-extrabold text-slate-800">
-                  {monthNamesThai[currentMonth]} {currentYear + 543}
-                </h2>
+                {/* Month Dropdown */}
+                <select
+                  value={currentMonth}
+                  onChange={e => handleMonthSelect(Number(e.target.value))}
+                  className="font-bold text-sm sm:text-base text-slate-800 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl px-2.5 py-1.5 cursor-pointer focus:outline-emerald-500"
+                >
+                  {monthNamesThai.map((name, idx) => (
+                    <option key={idx} value={idx}>{name}</option>
+                  ))}
+                </select>
+                {/* Year Dropdown */}
+                <select
+                  value={currentYear}
+                  onChange={e => handleYearSelect(Number(e.target.value))}
+                  className="font-bold text-sm sm:text-base text-slate-800 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl px-2.5 py-1.5 cursor-pointer focus:outline-emerald-500"
+                >
+                  {yearOptions.map(y => (
+                    <option key={y} value={y}>พ.ศ. {y + 543} ({y})</option>
+                  ))}
+                </select>
               </div>
 
               <div className="flex items-center gap-1.5">
                 <button
                   onClick={handlePrevMonth}
-                  className="p-2 rounded-lg hover:bg-slate-100 text-slate-600 transition cursor-pointer"
+                  className="p-2 rounded-xl hover:bg-slate-100 text-slate-600 transition cursor-pointer border border-slate-200"
                   title="เดือนก่อนหน้า"
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </button>
                 <button
-                  onClick={() => {
-                    setCurrentYear(2026);
-                    setCurrentMonth(7);
-                    setSelectedDate('2026-08-15');
-                  }}
-                  className="px-3 py-1 text-xs font-bold text-emerald-700 bg-emerald-50 rounded-lg hover:bg-emerald-100 cursor-pointer"
+                  onClick={handleGoToToday}
+                  className={`px-3 py-1.5 text-xs font-bold rounded-xl transition cursor-pointer flex items-center gap-1.5 border ${
+                    selectedDate === todayDateStr && currentMonth === todayInfo.m && currentYear === todayInfo.y
+                      ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+                      : 'text-emerald-700 bg-emerald-50 border-emerald-200 hover:bg-emerald-100 shadow-2xs'
+                  }`}
+                  title="กลับมายังวันปัจจุบัน"
                 >
-                  วันนี้
+                  <CalendarDays className="w-3.5 h-3.5" />
+                  <span>วันนี้</span>
                 </button>
                 <button
                   onClick={handleNextMonth}
-                  className="p-2 rounded-lg hover:bg-slate-100 text-slate-600 transition cursor-pointer"
+                  className="p-2 rounded-xl hover:bg-slate-100 text-slate-600 transition cursor-pointer border border-slate-200"
                   title="เดือนถัดไป"
                 >
                   <ChevronRight className="w-5 h-5" />
@@ -490,25 +593,33 @@ export const CalendarView: React.FC = () => {
             <div className="grid grid-cols-7 gap-1.5 flex-1">
               {calendarDays.map((cell, idx) => {
                 const isSelected = cell.dateStr === selectedDate;
+                const isToday = cell.dateStr === todayDateStr;
                 const hasEvents = cell.events.length > 0;
 
                 return (
                   <div
                     key={idx}
-                    onClick={() => setSelectedDate(cell.dateStr)}
+                    onClick={() => handleDateClick(cell.dateStr)}
                     className={`
-                      min-h-[88px] p-2 rounded-xl border transition flex flex-col justify-between cursor-pointer
+                      min-h-[88px] p-2 rounded-xl border transition flex flex-col justify-between cursor-pointer relative
                       ${!cell.isCurrentMonth ? 'bg-slate-50/40 text-slate-300 border-transparent opacity-60' : 'bg-white border-slate-200 hover:border-emerald-300'}
-                      ${isSelected ? 'ring-2 ring-emerald-500 bg-emerald-50/20 border-emerald-500' : ''}
+                      ${isSelected ? 'ring-2 ring-emerald-500 bg-emerald-50/25 border-emerald-500 shadow-xs' : isToday ? 'border-amber-400 bg-amber-50/30' : ''}
                     `}
                   >
                     <div className="flex items-center justify-between">
-                      <span className={`
-                        text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center
-                        ${isSelected ? 'bg-emerald-600 text-white shadow-xs' : cell.isCurrentMonth ? 'text-slate-800' : 'text-slate-400'}
-                      `}>
-                        {cell.dayNum}
-                      </span>
+                      <div className="flex items-center gap-1">
+                        <span className={`
+                          text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center
+                          ${isSelected ? 'bg-emerald-600 text-white shadow-xs' : isToday ? 'bg-amber-500 text-white font-extrabold ring-2 ring-amber-300 shadow-xs' : cell.isCurrentMonth ? 'text-slate-800' : 'text-slate-400'}
+                        `}>
+                          {cell.dayNum}
+                        </span>
+                        {isToday && (
+                          <span className="text-[9px] font-extrabold text-amber-700 bg-amber-100 px-1 rounded border border-amber-300">
+                            วันนี้
+                          </span>
+                        )}
+                      </div>
 
                       {hasEvents && (
                         <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-full border border-emerald-100">
@@ -548,8 +659,13 @@ export const CalendarView: React.FC = () => {
               <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
                 <div>
                   <span className="text-xs text-slate-400 font-semibold block">กิจกรรมและนัดหมายประจำวัน</span>
-                  <h3 className="text-base font-bold text-slate-900">
-                    {selectedDate}
+                  <h3 className="text-sm sm:text-base font-bold text-slate-900 flex flex-wrap items-center gap-1.5">
+                    <span>{formatThaiDate(selectedDate)}</span>
+                    {selectedDate === todayDateStr && (
+                      <span className="text-[10px] font-extrabold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300">
+                        วันนี้
+                      </span>
+                    )}
                   </h3>
                 </div>
                 <button
@@ -708,7 +824,14 @@ export const CalendarView: React.FC = () => {
                     return (
                       <tr key={ev.id} className="hover:bg-slate-50 transition">
                         <td className="px-4 py-3 whitespace-nowrap">
-                          <div className="font-bold text-slate-800">{ev.date}</div>
+                          <div className="font-bold text-slate-800 flex items-center gap-1.5">
+                            <span>{formatThaiDate(ev.date)}</span>
+                            {ev.date === todayDateStr && (
+                              <span className="text-[9px] font-extrabold text-amber-700 bg-amber-100 px-1.5 py-0.2 rounded border border-amber-300">
+                                วันนี้
+                              </span>
+                            )}
+                          </div>
                           {ev.startTime && (
                             <div className="text-[11px] text-slate-400">{ev.startTime} {ev.endTime ? `- ${ev.endTime}` : ''} น.</div>
                           )}
