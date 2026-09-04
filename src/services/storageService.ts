@@ -191,10 +191,13 @@ export class StorageService {
     localStorage.setItem(STORAGE_KEYS.CURRENT_USER_ID, userId);
   }
 
-  // Authentication Session
+  // Authentication Session (Enforce login every time link is opened / fresh session)
   static getAuthSession(): { isAuthenticated: boolean; userId: string | null; loginTime?: string } {
     try {
-      const data = localStorage.getItem(STORAGE_KEYS.AUTH_SESSION);
+      // Clear legacy permanent auth from localStorage so previous auto-logins are removed
+      localStorage.removeItem(STORAGE_KEYS.AUTH_SESSION);
+      
+      const data = sessionStorage.getItem(STORAGE_KEYS.AUTH_SESSION);
       if (data) {
         return JSON.parse(data);
       }
@@ -206,7 +209,7 @@ export class StorageService {
 
   static saveAuthSession(session: { isAuthenticated: boolean; userId: string | null; loginTime?: string }): void {
     try {
-      localStorage.setItem(STORAGE_KEYS.AUTH_SESSION, JSON.stringify(session));
+      sessionStorage.setItem(STORAGE_KEYS.AUTH_SESSION, JSON.stringify(session));
       if (session.userId) {
         this.setCurrentUserId(session.userId);
       }
@@ -216,7 +219,12 @@ export class StorageService {
   }
 
   static clearAuthSession(): void {
-    localStorage.removeItem(STORAGE_KEYS.AUTH_SESSION);
+    try {
+      sessionStorage.removeItem(STORAGE_KEYS.AUTH_SESSION);
+      localStorage.removeItem(STORAGE_KEYS.AUTH_SESSION);
+    } catch (e) {
+      console.error('Failed to clear auth session', e);
+    }
   }
 
   static getRememberedUser(): string {
