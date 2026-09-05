@@ -1,7 +1,11 @@
-import React, { useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
+import { Project } from '../../types';
 import { StatusBadge, PriorityBadge, KpiBadge } from '../common/Badge';
 import { HospitalLogo } from '../common/HospitalLogo';
+import { ExecutiveProjectShowcase } from './ExecutiveProjectShowcase';
+import { ProjectPresentationModal } from './ProjectPresentationModal';
+import { ProjectDetailModal } from '../projects/ProjectDetailModal';
 import { 
   CheckCircle2, 
   Clock, 
@@ -19,7 +23,9 @@ import {
   Stethoscope,
   Activity,
   FileCheck2,
-  Users
+  Users,
+  Award,
+  FolderKanban
 } from 'lucide-react';
 import { 
   ResponsiveContainer, 
@@ -38,6 +44,7 @@ import {
 
 export const DashboardView: React.FC = () => {
   const { 
+    projects,
     tasks, 
     kpis, 
     workgroups, 
@@ -47,6 +54,9 @@ export const DashboardView: React.FC = () => {
     setSelectedWorkgroupFilter,
     setIsCreateTaskModalOpen 
   } = useApp();
+
+  const [isPresentationOpen, setIsPresentationOpen] = useState(false);
+  const [detailProjectModal, setDetailProjectModal] = useState<Project | null>(null);
 
   // Summary Metrics Computation
   const stats = useMemo(() => {
@@ -210,12 +220,21 @@ export const DashboardView: React.FC = () => {
                 <span>{stats.completionRate}%</span>
               </div>
             </div>
-            <button
-              onClick={() => setIsCreateTaskModalOpen(true)}
-              className="px-4 py-2 bg-white text-teal-900 hover:bg-teal-50 font-bold rounded-xl text-xs sm:text-sm shadow-md transition flex items-center gap-2 cursor-pointer"
-            >
-              <span>+ มอบหมายงานใหม่</span>
-            </button>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={() => setIsPresentationOpen(true)}
+                className="px-3.5 py-2 bg-teal-900/80 hover:bg-teal-950 border border-teal-400/40 text-teal-100 hover:text-white font-bold rounded-xl text-xs sm:text-sm shadow-sm transition flex items-center gap-1.5 cursor-pointer"
+              >
+                <Award className="w-4 h-4 text-amber-300" />
+                <span>นำเสนอผลงานโครงการ ({projects.length})</span>
+              </button>
+              <button
+                onClick={() => setIsCreateTaskModalOpen(true)}
+                className="px-4 py-2 bg-white text-teal-900 hover:bg-teal-50 font-bold rounded-xl text-xs sm:text-sm shadow-md transition flex items-center gap-2 cursor-pointer"
+              >
+                <span>+ มอบหมายงานใหม่</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -275,6 +294,16 @@ export const DashboardView: React.FC = () => {
         </div>
 
       </div>
+
+      {/* Executive Project Performance & Presentation Showcase */}
+      <ExecutiveProjectShowcase
+        projects={projects}
+        workgroups={workgroups}
+        personnel={personnel}
+        onOpenPresentation={() => setIsPresentationOpen(true)}
+        onNavigateToProjects={() => setActiveTab('projects')}
+        onOpenProjectDetail={(project) => setDetailProjectModal(project)}
+      />
 
       {/* 2-Column Section: Urgent Table (Left) + KPI & Announcement (Right) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -713,6 +742,31 @@ export const DashboardView: React.FC = () => {
           })}
         </div>
       </div>
+
+      {/* Executive Fullscreen Presentation Modal */}
+      <ProjectPresentationModal
+        isOpen={isPresentationOpen}
+        onClose={() => setIsPresentationOpen(false)}
+        projects={projects}
+        workgroups={workgroups}
+        personnel={personnel}
+        onOpenProjectDetail={(project) => {
+          setIsPresentationOpen(false);
+          setDetailProjectModal(project);
+        }}
+      />
+
+      {/* Project Detail & Evidence Modal */}
+      {detailProjectModal && (
+        <ProjectDetailModal
+          project={detailProjectModal}
+          onClose={() => setDetailProjectModal(null)}
+          onEdit={() => {
+            setDetailProjectModal(null);
+            setActiveTab('projects');
+          }}
+        />
+      )}
 
     </div>
   );
