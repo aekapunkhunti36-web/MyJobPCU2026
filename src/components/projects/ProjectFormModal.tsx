@@ -6,6 +6,7 @@ import { X, Plus, Trash2, Upload, FileText, CheckCircle, AlertCircle, Calendar, 
 interface ProjectFormModalProps {
   isOpen: boolean;
   projectToEdit?: Project | null;
+  initialFiscalYear?: number;
   onClose: () => void;
 }
 
@@ -23,6 +24,7 @@ interface NewFileItem {
 export const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
   isOpen,
   projectToEdit,
+  initialFiscalYear = 2569,
   onClose
 }) => {
   const { workgroups, personnel, addProject, updateProject, currentUser } = useApp();
@@ -78,14 +80,16 @@ export const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
       setNotes(projectToEdit.notes || '');
       setNewFiles([]);
     } else {
-      // Auto-generate fresh project code
+      // Auto-generate fresh project code based on chosen fiscal year
+      const yearVal = initialFiscalYear || 2569;
+      const yearShort = String(yearVal).slice(-2);
       const rand = Math.floor(100 + Math.random() * 900);
-      setProjectCode(`PRJ-PNK-69-${rand}`);
+      setProjectCode(`PRJ-PNK-${yearShort}-${rand}`);
       setTitle('');
       setType('primary_care');
       setWorkgroupId(workgroups[0]?.id || 'wg-01');
       setLeaderId(currentUser?.id || personnel[0]?.id || 'usr-01');
-      setFiscalYear(2569);
+      setFiscalYear(yearVal);
       setStatus('in_progress');
       setBudgetRequested(80000);
       setBudgetApproved(80000);

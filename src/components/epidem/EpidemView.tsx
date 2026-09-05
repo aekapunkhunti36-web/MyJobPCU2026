@@ -31,7 +31,7 @@ export interface EpidemProgram {
   badge: string;
   tag: string;
   tagColor: string;
-  themeColor: 'emerald' | 'sky' | 'indigo';
+  themeColor: 'emerald' | 'sky' | 'indigo' | 'teal' | 'amber' | 'purple';
   isHttp?: boolean;
   description: string;
   features: string[];
@@ -80,6 +80,48 @@ export const EPIDEM_PROGRAMS: EpidemProgram[] = [
     isHttp: true,
     description: 'ระบบสารสนเทศวัณโรคแห่งชาติ กรมควบคุมโรค กระทรวงสาธารณสุข สำหรับลงทะเบียนและรายงานผลระดับประเทศ',
     features: ['ลงทะเบียนผู้ป่วย NTIP', 'บันทึกสูตรยาและการรักษา', 'รายงานประเมินผลสิ้นสุด', 'ส่งต่อและแลกเปลี่ยนข้อมูลระดับชาติ'],
+  },
+  {
+    id: 'jit-ddc',
+    orderNumber: 4,
+    title: 'คลังความรู้สำหรับทีม JIT /SRRT',
+    shortTitle: 'คลังความรู้ JIT/SRRT',
+    subtitle: 'ศูนย์รวมคู่มือ แนวทางปฏิบัติ และเอกสารวิชาการทีมเฝ้าระวังสอบสวนโรค กรมควบคุมโรค',
+    url: 'https://sites.google.com/view/jit-ddc?usp=sharing',
+    badge: 'JIT Knowledge',
+    tag: 'Google Sites DDC',
+    tagColor: 'bg-purple-50 text-purple-700 border-purple-200',
+    themeColor: 'purple',
+    description: 'แหล่งรวบรวมองค์ความรู้ เอกสารคู่มือ แนวทางการสอบสวนโรคติดต่อ และสื่อการเรียนรู้สำหรับทีม JIT และ SRRT กรมควบคุมโรค',
+    features: ['คู่มือการสอบสวนโรคติดต่อ', 'แบบฟอร์มรายงานทางระบาดวิทยา', 'แนวทางการควบคุมโรคสำคัญ', 'เอกสารวิชาการทีม JIT/SRRT'],
+  },
+  {
+    id: 'dds-surveillance',
+    orderNumber: 5,
+    title: 'แพลตฟอร์มเฝ้าระวังทางระบาดวิทยา Digital Disease Surveillance',
+    shortTitle: 'Digital Disease Surveillance',
+    subtitle: 'ระบบเฝ้าระวังเหตุการณ์และโรคติดต่อดิจิทัล (DDSS) กองระบาดวิทยา กรมควบคุมโรค',
+    url: 'https://ddsdoe.ddc.moph.go.th/ddss/',
+    badge: 'DDSS MOPH',
+    tag: 'กองระบาดวิทยา สธ.',
+    tagColor: 'bg-sky-50 text-sky-700 border-sky-200',
+    themeColor: 'sky',
+    description: 'แพลตฟอร์มเฝ้าระวังทางระบาดวิทยาและการตรวจจับสัญญาณการระบาดดิจิทัล กองระบาดวิทยา กรมควบคุมโรค กระทรวงสาธารณสุข',
+    features: ['เฝ้าระวังโรคติดต่อแบบเรียลไทม์', 'ตรวจจับสัญญาณความผิดปกติของการระบาด', 'รายงานสรุปสถานการณ์ระดับเขต/ประเทศ', 'วิเคราะห์สถิติระบาดวิทยาเชิงพื้นที่'],
+  },
+  {
+    id: 'zr506-r8',
+    orderNumber: 6,
+    title: 'ZR506 Dashboard เขตสุขภาพที่ 8',
+    shortTitle: 'ZR506 เขต 8',
+    subtitle: 'แดชบอร์ดติดตามรายงาน 506 และสถานการณ์โรคติดต่อ เขตสุขภาพที่ 8',
+    url: 'https://script.google.com/a/macros/u2t.ac.th/s/AKfycbzKV4spxq-VKIeKMK0VSGzo0G2GHaJwbig6W7aoNIvWh49MdC_QCTijfg2GVEr1jSQLsQ/exec',
+    badge: 'ZR506 เขต 8',
+    tag: 'Google Apps Script',
+    tagColor: 'bg-teal-50 text-teal-700 border-teal-200',
+    themeColor: 'teal',
+    description: 'ระบบสารสนเทศแดชบอร์ดรายงาน 506 เขตสุขภาพที่ 8 (สกลนคร, อุดรธานี, นครพนม, เลย, หนองคาย, หนองบัวลำภู, บึงกาฬ)',
+    features: ['แดชบอร์ดรายงานโรคติดต่อ 506 เขต 8', 'ข้อมูลสถานการณ์โรคจังหวัดสกลนคร', 'สถิติเปรียบเทียบค่ามัธยฐาน 5 ปี', 'ติดตามความครอบคลุมของการรายงาน'],
   },
 ];
 
@@ -148,7 +190,7 @@ export const EpidemView: React.FC = () => {
                 </h2>
                 <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
-                  พร้อมใช้งาน 3 ระบบ
+                  พร้อมใช้งาน {EPIDEM_PROGRAMS.length} ระบบ
                 </span>
               </div>
               <p className="text-xs sm:text-sm text-slate-500 mt-1 flex flex-wrap items-center gap-2">
@@ -228,29 +270,41 @@ export const EpidemView: React.FC = () => {
             <button
               onClick={handleOpenAllPrograms}
               className="px-3 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-semibold transition shadow-xs flex items-center gap-1.5 cursor-pointer active:scale-95"
-              title="เปิดทั้ง 3 โปรแกรมพร้อมกันในแท็บแยก"
+              title={`เปิดทั้ง ${EPIDEM_PROGRAMS.length} โปรแกรมพร้อมกันในแท็บแยก`}
             >
               <Share2 className="w-3.5 h-3.5 text-amber-300" />
-              <span className="hidden sm:inline">เปิดทั้ง 3 แท็บ</span>
+              <span className="hidden sm:inline">เปิดทั้ง {EPIDEM_PROGRAMS.length} แท็บ</span>
             </button>
           </div>
         </div>
 
-        {/* 3 Program Selector Cards */}
+        {/* 6 Program Selector Cards */}
         {!isFullscreen && (
-          <div className="mt-4 pt-4 border-t border-slate-100 grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="mt-4 pt-4 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
             {EPIDEM_PROGRAMS.map(prog => {
               const isActive = prog.id === activeProgramId;
               const activeBorder = prog.themeColor === 'emerald'
                 ? 'border-emerald-500 ring-2 ring-emerald-500/20 bg-emerald-50/40'
                 : prog.themeColor === 'sky'
                 ? 'border-sky-500 ring-2 ring-sky-500/20 bg-sky-50/40'
+                : prog.themeColor === 'teal'
+                ? 'border-teal-500 ring-2 ring-teal-500/20 bg-teal-50/40'
+                : prog.themeColor === 'purple'
+                ? 'border-purple-500 ring-2 ring-purple-500/20 bg-purple-50/40'
+                : prog.themeColor === 'amber'
+                ? 'border-amber-500 ring-2 ring-amber-500/20 bg-amber-50/40'
                 : 'border-indigo-500 ring-2 ring-indigo-500/20 bg-indigo-50/40';
 
               const badgeColor = prog.themeColor === 'emerald'
                 ? 'bg-emerald-600 text-white'
                 : prog.themeColor === 'sky'
                 ? 'bg-sky-600 text-white'
+                : prog.themeColor === 'teal'
+                ? 'bg-teal-600 text-white'
+                : prog.themeColor === 'purple'
+                ? 'bg-purple-600 text-white'
+                : prog.themeColor === 'amber'
+                ? 'bg-amber-600 text-white'
                 : 'bg-indigo-600 text-white';
 
               return (

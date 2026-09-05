@@ -14,12 +14,22 @@ import { EvidenceView } from './components/evidence/EvidenceView';
 import { ReportsView } from './components/reports/ReportsView';
 import { NotificationsView } from './components/notifications/NotificationsView';
 import { EpidemView } from './components/epidem/EpidemView';
+import { HealthPromotionView } from './components/healthPromotion/HealthPromotionView';
 import { SettingsView } from './components/settings/SettingsView';
 import { TaskFormModal } from './components/tasks/TaskFormModal';
 import { TaskDetailModal } from './components/tasks/TaskDetailModal';
 
 const AppContent: React.FC = () => {
-  const { activeTab, isAuthenticated } = useApp();
+  const { 
+    activeTab, 
+    isAuthenticated,
+    isCreateTaskModalOpen,
+    setIsCreateTaskModalOpen,
+    taskToEdit,
+    setTaskToEdit,
+    selectedTaskForDetail,
+    setSelectedTaskForDetail
+  } = useApp();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   // If user is not authenticated, show the login screen
@@ -49,6 +59,8 @@ const AppContent: React.FC = () => {
         return <ReportsView />;
       case 'epidem':
         return <EpidemView />;
+      case 'health_promotion':
+        return <HealthPromotionView />;
       case 'notifications':
         return <NotificationsView />;
       case 'settings':
@@ -77,8 +89,25 @@ const AppContent: React.FC = () => {
       </div>
 
       {/* Global Modals */}
-      <TaskFormModal />
-      <TaskDetailModal />
+      <TaskFormModal
+        isOpen={isCreateTaskModalOpen}
+        onClose={() => {
+          setIsCreateTaskModalOpen(false);
+          setTaskToEdit(null);
+        }}
+        taskToEdit={taskToEdit}
+      />
+      {selectedTaskForDetail && (
+        <TaskDetailModal
+          task={selectedTaskForDetail}
+          onClose={() => setSelectedTaskForDetail(null)}
+          onEdit={(task) => {
+            setSelectedTaskForDetail(null);
+            setTaskToEdit(task);
+            setIsCreateTaskModalOpen(true);
+          }}
+        />
+      )}
     </div>
   );
 };

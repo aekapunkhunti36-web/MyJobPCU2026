@@ -24,7 +24,10 @@ import {
   Trash2,
   Calendar,
   ExternalLink,
-  FileCheck2
+  FileCheck2,
+  ChevronRight,
+  X,
+  Sparkles
 } from 'lucide-react';
 import { ProjectCard } from './ProjectCard';
 import { ProjectDetailModal } from './ProjectDetailModal';
@@ -57,6 +60,11 @@ export const ProjectsView: React.FC = () => {
   const [previewDocData, setPreviewDocData] = useState<{ file: ProjectFile; project: Project } | null>(null);
   const [isChecklistModalOpen, setIsChecklistModalOpen] = useState(false);
   const [checklistProject, setChecklistProject] = useState<Project | null>(null);
+
+  // Fiscal Year Selection Modal before entering project creation
+  const [isYearSelectionModalOpen, setIsYearSelectionModalOpen] = useState(false);
+  const [chosenFiscalYear, setChosenFiscalYear] = useState<number>(2569);
+  const [customYearInput, setCustomYearInput] = useState<string>('');
 
   // Filtered Projects
   const filteredProjects = useMemo(() => {
@@ -242,8 +250,9 @@ export const ProjectsView: React.FC = () => {
 
           <button
             onClick={() => {
-              setProjectToEdit(null);
-              setIsCreateProjectModalOpen(true);
+              const initialYear = selectedYear !== 'all' ? parseInt(selectedYear, 10) : 2569;
+              setChosenFiscalYear(initialYear);
+              setIsYearSelectionModalOpen(true);
             }}
             className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md shadow-emerald-600/20 transition cursor-pointer"
           >
@@ -669,11 +678,160 @@ export const ProjectsView: React.FC = () => {
         <ProjectFormModal
           isOpen={isCreateProjectModalOpen || !!projectToEdit}
           projectToEdit={projectToEdit}
+          initialFiscalYear={chosenFiscalYear}
           onClose={() => {
             setIsCreateProjectModalOpen(false);
             setProjectToEdit(null);
           }}
         />
+      )}
+
+      {/* Fiscal Year Selection Modal (Pre-Step for Project Creation) */}
+      {isYearSelectionModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-md w-full overflow-hidden animate-in zoom-in-95 duration-150">
+            {/* Header */}
+            <div className="px-6 py-4 bg-gradient-to-r from-emerald-700 to-teal-700 text-white flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
+                  <Calendar className="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-white">เลือกปีงบประมาณของโครงการ</h3>
+                  <p className="text-[11px] text-emerald-100">ระบบบันทึกโครงการ โรงพยาบาลโพนนาแก้ว</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsYearSelectionModalOpen(false)}
+                className="p-1 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-2">
+                  เลือกปีงบประมาณที่ต้องการบันทึกโครงการ:
+                </label>
+                <div className="grid grid-cols-2 gap-2.5">
+                  {[
+                    { year: 2570, desc: 'วางแผนล่วงหน้า', tag: 'ปีหน้า' },
+                    { year: 2569, desc: 'ปีงบประมาณปัจจุบัน', tag: 'ปัจจุบัน ★' },
+                    { year: 2568, desc: 'ปีงบที่ผ่านมา', tag: 'ย้อนหลัง' },
+                    { year: 2567, desc: 'บันทึกย้อนหลัง', tag: 'ประวัติ' },
+                  ].map(item => {
+                    const isSelected = chosenFiscalYear === item.year;
+                    const countInYear = projects.filter(p => p.fiscalYear === item.year).length;
+                    return (
+                      <button
+                        key={item.year}
+                        type="button"
+                        onClick={() => {
+                          setChosenFiscalYear(item.year);
+                          setCustomYearInput('');
+                        }}
+                        className={`p-3 rounded-xl border text-left transition flex flex-col justify-between cursor-pointer ${
+                          isSelected
+                            ? 'bg-emerald-50 border-emerald-500 ring-2 ring-emerald-500/20 shadow-xs'
+                            : 'bg-slate-50 border-slate-200 hover:bg-white hover:border-slate-300'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className={`text-base font-bold font-mono ${isSelected ? 'text-emerald-800' : 'text-slate-800'}`}>
+                            {item.year}
+                          </span>
+                          <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${
+                            isSelected ? 'bg-emerald-200 text-emerald-900' : 'bg-slate-200 text-slate-600'
+                          }`}>
+                            {item.tag}
+                          </span>
+                        </div>
+                        <span className="text-[11px] text-slate-500 mt-1">{item.desc}</span>
+                        <span className="text-[10px] text-slate-400 mt-1">
+                          {countInYear} โครงการในระบบ
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Or Custom Year */}
+              <div className="pt-2 border-t border-slate-100">
+                <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                  หรือระบุปีงบประมาณอื่นๆ (พ.ศ.):
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    min="2550"
+                    max="2600"
+                    placeholder="เช่น 2566, 2571"
+                    value={customYearInput}
+                    onChange={(e) => {
+                      setCustomYearInput(e.target.value);
+                      const val = parseInt(e.target.value, 10);
+                      if (val && val >= 2500 && val <= 2650) {
+                        setChosenFiscalYear(val);
+                      }
+                    }}
+                    className="flex-1 px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-mono focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                  />
+                  {customYearInput && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const val = parseInt(customYearInput, 10);
+                        if (val) setChosenFiscalYear(val);
+                      }}
+                      className="px-3 py-1.5 bg-slate-800 text-white rounded-lg text-xs font-bold"
+                    >
+                      เลือก
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Selected Summary Info */}
+              <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200/70 flex items-center justify-between text-xs">
+                <div>
+                  <span className="text-slate-600 text-[11px] block">ปีงบประมาณที่เลือก:</span>
+                  <strong className="text-emerald-900 font-bold text-sm">
+                    ปีงบประมาณ พ.ศ. {chosenFiscalYear}
+                  </strong>
+                </div>
+                <span className="text-xs text-emerald-700 bg-white px-2.5 py-1 rounded-lg border border-emerald-200 font-medium">
+                  {projects.filter(p => p.fiscalYear === chosenFiscalYear).length} โครงการที่มีอยู่
+                </span>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setIsYearSelectionModalOpen(false)}
+                  className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition cursor-pointer"
+                >
+                  ยกเลิก
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsYearSelectionModalOpen(false);
+                    setProjectToEdit(null);
+                    setIsCreateProjectModalOpen(true);
+                  }}
+                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-md shadow-emerald-600/20 transition flex items-center gap-1.5 cursor-pointer"
+                >
+                  <span>เข้าสู่หน้าบันทึกโครงการ ({chosenFiscalYear})</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Document Preview Modal */}

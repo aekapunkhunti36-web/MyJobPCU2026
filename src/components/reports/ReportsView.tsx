@@ -1,16 +1,90 @@
 import React, { useState, useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
 import { HospitalLogo } from '../common/HospitalLogo';
-import { FileText, Download, Printer, Filter, Calendar, Layers, Users, Target, AlertCircle, CheckCircle2, Table } from 'lucide-react';
+import { 
+  FileText, 
+  Download, 
+  Printer, 
+  Filter, 
+  Calendar, 
+  Layers, 
+  Users, 
+  Target, 
+  AlertCircle, 
+  CheckCircle2, 
+  Table, 
+  Edit3, 
+  UserCheck, 
+  PenTool, 
+  Check, 
+  X, 
+  RotateCcw 
+} from 'lucide-react';
 import * as XLSX from 'xlsx';
 
 export const ReportsView: React.FC = () => {
-  const { tasks, kpis, workgroups, personnel } = useApp();
+  const { tasks, kpis, workgroups, personnel, currentUser } = useApp();
 
   const [reportType, setReportType] = useState<string>('workgroup_summary');
   const [selectedFiscalYear, setSelectedFiscalYear] = useState<string>('2569');
   const [selectedWorkgroup, setSelectedWorkgroup] = useState<string>('all');
   const [selectedQuarter, setSelectedQuarter] = useState<string>('all');
+
+  // Report Author Sign-off State (Persisted in localStorage)
+  const [creatorName, setCreatorName] = useState<string>(() => {
+    return localStorage.getItem('pnk_report_creator_name') || currentUser?.name || 'พว.สมใจ ใจดี';
+  });
+  const [creatorPosition, setCreatorPosition] = useState<string>(() => {
+    return localStorage.getItem('pnk_report_creator_pos') || currentUser?.position || 'พยาบาลวิชาชีพชำนาญการ';
+  });
+  const [approverName, setApproverName] = useState<string>(() => {
+    return localStorage.getItem('pnk_report_approver_name') || 'นายตฤณพงศ์  ธีรพงศ์ธนสุข';
+  });
+  const [approverPosition, setApproverPosition] = useState<string>(() => {
+    return localStorage.getItem('pnk_report_approver_pos') || 'ผู้อำนวยการโรงพยาบาลโพนนาแก้ว';
+  });
+
+  const [isEditSignersModalOpen, setIsEditSignersModalOpen] = useState(false);
+  const [tempCreatorName, setTempCreatorName] = useState(creatorName);
+  const [tempCreatorPosition, setTempCreatorPosition] = useState(creatorPosition);
+  const [tempApproverName, setTempApproverName] = useState(approverName);
+  const [tempApproverPosition, setTempApproverPosition] = useState(approverPosition);
+
+  const handleOpenEditSigners = () => {
+    setTempCreatorName(creatorName);
+    setTempCreatorPosition(creatorPosition);
+    setTempApproverName(approverName);
+    setTempApproverPosition(approverPosition);
+    setIsEditSignersModalOpen(true);
+  };
+
+  const handleSaveSigners = (e: React.FormEvent) => {
+    e.preventDefault();
+    setCreatorName(tempCreatorName);
+    setCreatorPosition(tempCreatorPosition);
+    setApproverName(tempApproverName);
+    setApproverPosition(tempApproverPosition);
+    localStorage.setItem('pnk_report_creator_name', tempCreatorName);
+    localStorage.setItem('pnk_report_creator_pos', tempCreatorPosition);
+    localStorage.setItem('pnk_report_approver_name', tempApproverName);
+    localStorage.setItem('pnk_report_approver_pos', tempApproverPosition);
+    setIsEditSignersModalOpen(false);
+  };
+
+  const handleSelectStaffForCreator = (staffId: string) => {
+    const staff = personnel.find(p => p.id === staffId);
+    if (staff) {
+      setTempCreatorName(staff.name);
+      setTempCreatorPosition(staff.position);
+    }
+  };
+
+  const handleResetToCurrentUser = () => {
+    if (currentUser) {
+      setTempCreatorName(currentUser.name);
+      setTempCreatorPosition(currentUser.position);
+    }
+  };
 
   // Generate dynamic report data based on reportType
   const reportData = useMemo(() => {
@@ -168,7 +242,16 @@ export const ReportsView: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={handleOpenEditSigners}
+            className="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-xl text-xs sm:text-sm font-semibold shadow-xs transition flex items-center gap-1.5 cursor-pointer"
+            title="แก้ไขชื่อและตำแหน่งผู้จัดทำรายงาน / ผู้อำนวยการ"
+          >
+            <Edit3 className="w-4 h-4 text-teal-600" />
+            <span>แก้ไขชื่อผู้จัดทำ</span>
+          </button>
+
           <button
             onClick={handleExportExcel}
             className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs sm:text-sm font-bold shadow-sm transition flex items-center gap-1.5 cursor-pointer"
@@ -350,19 +433,188 @@ export const ReportsView: React.FC = () => {
 
         {/* Report Sign-off section */}
         <div className="grid grid-cols-2 gap-8 pt-8 border-t border-slate-100 text-xs text-center">
-          <div>
+          <div className="relative group p-3 rounded-xl hover:bg-slate-50 transition border border-transparent hover:border-slate-200/60">
             <p className="text-slate-500 mb-10">ผู้จัดทำรายงาน</p>
-            <p className="font-bold text-slate-800">( พว.สมใจ ใจดี )</p>
-            <p className="text-slate-500">พยาบาลวิชาชีพชำนาญการ</p>
+            <p className="font-bold text-slate-800 text-sm">( {creatorName} )</p>
+            <p className="text-slate-500 mt-0.5">{creatorPosition}</p>
+            
+            <button
+              onClick={handleOpenEditSigners}
+              className="print:hidden mt-3 inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-700 text-[11px] font-bold transition cursor-pointer border border-teal-200/60"
+            >
+              <Edit3 className="w-3 h-3" />
+              <span>แก้ไขชื่อผู้จัดทำ</span>
+            </button>
           </div>
-          <div>
+
+          <div className="relative group p-3 rounded-xl hover:bg-slate-50 transition border border-transparent hover:border-slate-200/60">
             <p className="text-slate-500 mb-10">ผู้รับรองรายงาน / ผู้อำนวยการ</p>
-            <p className="font-bold text-slate-800">( นายตฤณพงศ์  ธีรพงศ์ธนสุข )</p>
-            <p className="text-slate-500">ผู้อำนวยการโรงพยาบาลโพนนาแก้ว</p>
+            <p className="font-bold text-slate-800 text-sm">( {approverName} )</p>
+            <p className="text-slate-500 mt-0.5">{approverPosition}</p>
+            
+            <button
+              onClick={handleOpenEditSigners}
+              className="print:hidden mt-3 inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-semibold transition cursor-pointer border border-slate-200"
+            >
+              <Edit3 className="w-3 h-3" />
+              <span>แก้ไขผู้รับรอง</span>
+            </button>
           </div>
         </div>
 
       </div>
+
+      {/* Edit Signers Modal */}
+      {isEditSignersModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-lg w-full overflow-hidden animate-in zoom-in-95 duration-150">
+            {/* Modal Header */}
+            <div className="px-6 py-4 bg-gradient-to-r from-teal-700 to-emerald-700 text-white flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
+                  <PenTool className="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-white">แก้ไขข้อมูลผู้จัดทำและผู้ลงนามรายงาน</h3>
+                  <p className="text-[11px] text-teal-100">ข้อมูลนี้จะปรากฏที่ส่วนท้ายของรายงานสรุปทุกประเภท</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsEditSignersModalOpen(false)}
+                className="p-1 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Form */}
+            <form onSubmit={handleSaveSigners} className="p-6 space-y-5">
+              {/* Creator Section */}
+              <div className="space-y-3 p-4 bg-teal-50/50 rounded-xl border border-teal-200/70">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-teal-900 flex items-center gap-1.5">
+                    <UserCheck className="w-4 h-4 text-teal-600" />
+                    ผู้จัดทำรายงาน (Report Creator)
+                  </span>
+                  {currentUser && (
+                    <button
+                      type="button"
+                      onClick={handleResetToCurrentUser}
+                      className="text-[11px] text-teal-700 hover:text-teal-800 font-bold flex items-center gap-1 hover:underline cursor-pointer"
+                    >
+                      <RotateCcw className="w-3 h-3" />
+                      ใช้ชื่อฉัน (@{currentUser.username})
+                    </button>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                    เลือกจากรายชื่อบุคลากร (ดึงข้อมูลอัตโนมัติ):
+                  </label>
+                  <select
+                    onChange={(e) => {
+                      if (e.target.value) handleSelectStaffForCreator(e.target.value);
+                    }}
+                    defaultValue=""
+                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs text-slate-800 focus:ring-2 focus:ring-teal-500 focus:outline-none cursor-pointer"
+                  >
+                    <option value="" disabled>-- เลือกบุคลากรในโรงพยาบาล --</option>
+                    {personnel.map(p => (
+                      <option key={p.id} value={p.id}>
+                        {p.name} ({p.position})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      ชื่อ - สกุล ผู้จัดทำ *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={tempCreatorName}
+                      onChange={e => setTempCreatorName(e.target.value)}
+                      placeholder="เช่น พว.สมใจ ใจดี"
+                      className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs text-slate-800 focus:ring-2 focus:ring-teal-500 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      ตำแหน่งผู้จัดทำ *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={tempCreatorPosition}
+                      onChange={e => setTempCreatorPosition(e.target.value)}
+                      placeholder="เช่น พยาบาลวิชาชีพชำนาญการ"
+                      className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs text-slate-800 focus:ring-2 focus:ring-teal-500 focus:outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Approver Section */}
+              <div className="space-y-3 p-4 bg-slate-50 rounded-xl border border-slate-200/80">
+                <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                  <span>ผู้รับรองรายงาน / ผู้อำนวยการ (Approver / Director)</span>
+                </span>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      ชื่อ - สกุล ผู้รับรอง *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={tempApproverName}
+                      onChange={e => setTempApproverName(e.target.value)}
+                      placeholder="ชื่อผู้อำนวยการ"
+                      className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs text-slate-800 focus:ring-2 focus:ring-teal-500 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      ตำแหน่งผู้รับรอง *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={tempApproverPosition}
+                      onChange={e => setTempApproverPosition(e.target.value)}
+                      placeholder="เช่น ผู้อำนวยการโรงพยาบาลโพนนาแก้ว"
+                      className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs text-slate-800 focus:ring-2 focus:ring-teal-500 focus:outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setIsEditSignersModalOpen(false)}
+                  className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition cursor-pointer"
+                >
+                  ยกเลิก
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-teal-600 hover:bg-teal-700 active:bg-teal-800 text-white rounded-xl text-xs font-bold shadow-md shadow-teal-600/20 transition flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>บันทึกข้อมูลผู้จัดทำ</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
     </div>
   );

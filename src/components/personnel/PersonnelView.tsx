@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import * as XLSX from 'xlsx';
 import { useApp } from '../../context/AppContext';
 import { User, UserRole } from '../../types';
 import { RoleBadge, StatusBadge } from '../common/Badge';
@@ -18,7 +19,15 @@ import {
   Trash2, 
   X, 
   Check, 
-  UserCheck 
+  UserCheck,
+  Download,
+  Key,
+  FileSpreadsheet,
+  FileText,
+  Copy,
+  Eye,
+  EyeOff,
+  Shield
 } from 'lucide-react';
 
 export const PersonnelView: React.FC = () => {
@@ -147,11 +156,94 @@ export const PersonnelView: React.FC = () => {
     }
   };
 
+  // State for toggling password visibility per user
+  const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({});
+  const [copiedStaffId, setCopiedStaffId] = useState<string | null>(null);
+
+  const togglePasswordVisibility = (id: string) => {
+    setShowPasswords(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const handleCopyCredentials = (person: User) => {
+    const text = `ชื่อผู้ใช้: ${person.username || person.id}\nรหัสผ่าน: ${person.password || 'password123'}\nชื่อ-สกุล: ${person.name}\nตำแหน่ง: ${person.position}`;
+    navigator.clipboard.writeText(text);
+    setCopiedStaffId(person.id);
+    setTimeout(() => setCopiedStaffId(null), 2000);
+  };
+
+  const handleExportExcel = () => {
+    const dataToExport = filteredPersonnel.map((person, index) => {
+      const primaryWg = workgroups.find(w => w.id === person.workgroupId);
+      return {
+        'ลำดับ': index + 1,
+        'ชื่อ - สกุล': person.name,
+        'ชื่อผู้ใช้งาน (Username)': person.username || person.id,
+        'รหัสผ่าน (Password)': person.password || 'password123',
+        'สิทธิ์การใช้งาน (Role)': person.role === 'admin' ? 'ผู้ดูแลระบบ (Admin)' : person.role === 'head' ? 'หัวหน้ากลุ่มงาน (Head)' : 'เจ้าหน้าที่ผู้ปฏิบัติงาน (Officer)',
+        'ตำแหน่ง': person.position,
+        'กลุ่มงานที่สังกัด': primaryWg ? `${primaryWg.code}. ${primaryWg.name}` : '-',
+        'ภาระงานที่รับผิดชอบ': person.responsibility || '-',
+        'เบอร์โทรศัพท์': person.phone || '-',
+        'อีเมล': person.email || '-'
+      };
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    worksheet['!cols'] = [
+      { wch: 6 },
+      { wch: 25 },
+      { wch: 20 },
+      { wch: 18 },
+      { wch: 22 },
+      { wch: 25 },
+      { wch: 35 },
+      { wch: 40 },
+      { wch: 16 },
+      { wch: 25 }
+    ];
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'User_Credentials');
+    const dateStr = new Date().toISOString().split('T')[0];
+    XLSX.writeFile(workbook, `บัญชีผู้ใช้และรหัสผ่าน_รพ_โพนนาแก้ว_${dateStr}.xlsx`);
+  };
+
+  const handleExportCSV = () => {
+    const headers = ['ลำดับ', 'ชื่อ-สกุล', 'ชื่อผู้ใช้งาน (Username)', 'รหัสผ่าน (Password)', 'สิทธิ์การใช้งาน', 'ตำแหน่ง', 'กลุ่มงาน', 'ภาระงาน', 'เบอร์โทรศัพท์', 'อีเมล'];
+    const rows = filteredPersonnel.map((person, index) => {
+      const primaryWg = workgroups.find(w => w.id === person.workgroupId);
+      const roleText = person.role === 'admin' ? 'Admin' : person.role === 'head' ? 'Head' : 'Officer';
+      return [
+        index + 1,
+        `"${person.name.replace(/"/g, '""')}"`,
+        `"${(person.username || person.id).replace(/"/g, '""')}"`,
+        `"${(person.password || 'password123').replace(/"/g, '""')}"`,
+        `"${roleText}"`,
+        `"${person.position.replace(/"/g, '""')}"`,
+        `"${(primaryWg ? primaryWg.name : '').replace(/"/g, '""')}"`,
+        `"${(person.responsibility || '').replace(/"/g, '""')}"`,
+        `"${(person.phone || '').replace(/"/g, '""')}"`,
+        `"${(person.email || '').replace(/"/g, '""')}"`
+      ].join(',');
+    });
+
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    const dateStr = new Date().toISOString().split('T')[0];
+    link.setAttribute('download', `บัญชีผู้ใช้และรหัสผ่าน_รพ_โพนนาแก้ว_${dateStr}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="space-y-6 pb-12">
       
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-slate-800 flex items-center gap-2">
             <span>👥 ทำเนียบบุคลากรและภาระงาน (Personnel & Workload)</span>
@@ -164,13 +256,34 @@ export const PersonnelView: React.FC = () => {
           </p>
         </div>
 
-        <button
-          onClick={handleOpenAddModal}
-          className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs sm:text-sm font-bold shadow-sm transition flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          <span>+ เพิ่มบุคลากรใหม่</span>
-        </button>
+        <div className="flex items-center gap-2.5 flex-wrap">
+          {/* Export Buttons */}
+          <button
+            onClick={handleExportExcel}
+            className="px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition cursor-pointer"
+            title="ส่งออกรายชื่อผู้ใช้งานและรหัสผ่านเป็นไฟล์ Excel (.xlsx)"
+          >
+            <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+            <span>ส่งออก User & รหัส (Excel)</span>
+          </button>
+
+          <button
+            onClick={handleExportCSV}
+            className="px-3 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-300 rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-xs transition cursor-pointer"
+            title="ส่งออกเป็นไฟล์ข้อความ CSV (.csv)"
+          >
+            <Download className="w-3.5 h-3.5 text-slate-500" />
+            <span>CSV</span>
+          </button>
+
+          <button
+            onClick={handleOpenAddModal}
+            className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs sm:text-sm font-bold shadow-sm transition flex items-center gap-1.5 cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>+ เพิ่มบุคลากรใหม่</span>
+          </button>
+        </div>
       </div>
 
       {/* Filter Bar */}
@@ -259,6 +372,41 @@ export const PersonnelView: React.FC = () => {
                   <strong className="text-slate-800 truncate font-semibold">
                     {primaryWg?.code}. {primaryWg?.name}
                   </strong>
+                </div>
+
+                {/* Credentials Badge / Password & Copy */}
+                <div className="mb-3 px-2.5 py-1.5 bg-slate-50/90 rounded-xl border border-slate-200/70 flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Key className="w-3.5 h-3.5 text-teal-600 shrink-0" />
+                    <div className="truncate">
+                      <span className="text-[11px] text-slate-500 mr-1.5">รหัสผ่าน:</span>
+                      <span className="font-mono font-bold text-slate-800 text-[11px] tracking-wide">
+                        {showPasswords[person.id] ? (person.password || 'password123') : '••••••••'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => togglePasswordVisibility(person.id)}
+                      className="p-1 hover:bg-slate-200/80 rounded text-slate-400 hover:text-slate-700 transition cursor-pointer"
+                      title={showPasswords[person.id] ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'}
+                    >
+                      {showPasswords[person.id] ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleCopyCredentials(person)}
+                      className="p-1 hover:bg-teal-100 rounded text-slate-400 hover:text-teal-700 transition cursor-pointer"
+                      title="คัดลอก User และรหัสผ่าน"
+                    >
+                      {copiedStaffId === person.id ? (
+                        <Check className="w-3.5 h-3.5 text-emerald-600" />
+                      ) : (
+                        <Copy className="w-3.5 h-3.5" />
+                      )}
+                    </button>
+                  </div>
                 </div>
 
                 {/* Responsibilities */}

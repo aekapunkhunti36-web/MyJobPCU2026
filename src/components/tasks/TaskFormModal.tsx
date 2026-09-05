@@ -10,7 +10,7 @@ interface TaskFormModalProps {
 }
 
 export const TaskFormModal: React.FC<TaskFormModalProps> = ({ isOpen, onClose, taskToEdit }) => {
-  const { workgroups, personnel, kpis, addTask, updateTask, currentUser } = useApp();
+  const { workgroups, personnel, kpis, addTask, updateTask, currentUser, selectedWorkgroupFilter } = useApp();
 
   const [taskCode, setTaskCode] = useState('');
   const [title, setTitle] = useState('');
@@ -57,9 +57,12 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({ isOpen, onClose, t
       setTaskCode(`PNK-69-${autoNum}`);
       setTitle('');
       setDescription('');
-      const defaultWg = workgroups[0]?.id || 'wg-01';
+      const defaultWg = (selectedWorkgroupFilter && selectedWorkgroupFilter !== 'all') 
+        ? selectedWorkgroupFilter 
+        : (workgroups[0]?.id || 'wg-01');
+      const targetWgObj = workgroups.find(w => w.id === defaultWg) || workgroups[0];
       setWorkgroupId(defaultWg);
-      setSubActivity(workgroups[0]?.subActivities[0] || '');
+      setSubActivity(targetWgObj?.subActivities[0] || '');
       setMainAssigneeId(currentUser.id || personnel[0]?.id || 'usr-01');
       setCoAssigneeIds([]);
       const today = new Date().toISOString().split('T')[0];
@@ -80,7 +83,7 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({ isOpen, onClose, t
         { id: `st-${Date.now()}-3`, title: 'สรุปรายงานผลและแนบหลักฐาน', completed: false }
       ]);
     }
-  }, [taskToEdit, isOpen, workgroups, personnel, currentUser]);
+  }, [taskToEdit, isOpen, workgroups, personnel, currentUser, selectedWorkgroupFilter]);
 
   // Selected workgroup details
   const currentWorkgroup = workgroups.find(w => w.id === workgroupId);

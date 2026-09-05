@@ -2,8 +2,6 @@ import React, { useState, useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Task, TaskStatus, Priority } from '../../types';
 import { StatusBadge, PriorityBadge } from '../common/Badge';
-import { TaskFormModal } from './TaskFormModal';
-import { TaskDetailModal } from './TaskDetailModal';
 import { 
   Search, 
   Filter, 
@@ -43,7 +41,8 @@ export const TasksView: React.FC = () => {
     setGlobalSearch,
     selectedWorkgroupFilter,
     setSelectedWorkgroupFilter,
-    updateTaskProgress
+    updateTaskProgress,
+    setTaskToEdit
   } = useApp();
 
   // Local Filter States
@@ -54,10 +53,6 @@ export const TasksView: React.FC = () => {
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
   const [sortBy, setSortBy] = useState<'dueDate' | 'priority' | 'progress' | 'title'>('dueDate');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-
-  // Edit Modal State
-  const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
-  const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
 
   // Filter Computation
   const filteredTasks = useMemo(() => {
@@ -152,7 +147,7 @@ export const TasksView: React.FC = () => {
 
   const handleEditClick = (task: Task) => {
     setTaskToEdit(task);
-    setIsEditModalOpen(true);
+    setIsCreateTaskModalOpen(true);
   };
 
   return (
@@ -183,7 +178,10 @@ export const TasksView: React.FC = () => {
           </button>
 
           <button
-            onClick={() => setIsCreateTaskModalOpen(true)}
+            onClick={() => {
+              setTaskToEdit(null);
+              setIsCreateTaskModalOpen(true);
+            }}
             className="px-4 py-2 bg-teal-600 hover:bg-teal-700 active:bg-teal-800 text-white rounded-xl text-xs sm:text-sm font-bold shadow-md shadow-teal-700/20 transition flex items-center gap-1.5 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
@@ -661,27 +659,6 @@ export const TasksView: React.FC = () => {
           })}
         </div>
       )}
-
-      {/* Task Create / Edit Modal */}
-      <TaskFormModal
-        isOpen={isCreateTaskModalOpen || isEditModalOpen}
-        onClose={() => {
-          setIsCreateTaskModalOpen(false);
-          setIsEditModalOpen(false);
-          setTaskToEdit(null);
-        }}
-        taskToEdit={taskToEdit}
-      />
-
-      {/* Task Detail Modal */}
-      <TaskDetailModal
-        task={selectedTaskForDetail}
-        onClose={() => setSelectedTaskForDetail(null)}
-        onEdit={task => {
-          setSelectedTaskForDetail(null);
-          handleEditClick(task);
-        }}
-      />
 
     </div>
   );

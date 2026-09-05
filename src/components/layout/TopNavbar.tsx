@@ -19,7 +19,10 @@ import {
   KeyRound,
   UserCheck,
   Cloud,
-  CloudOff
+  CloudOff,
+  Lock,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 
 interface TopNavbarProps {
@@ -32,6 +35,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({ setIsMobileOpen }) => {
     currentUser, 
     personnel, 
     switchUser, 
+    switchUserWithPassword,
     logout,
     notifications, 
     unreadNotificationsCount, 
@@ -49,6 +53,13 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({ setIsMobileOpen }) => {
 
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isNotifDropdownOpen, setIsNotifDropdownOpen] = useState(false);
+
+  // Switch User with Password Modal State
+  const [switchTargetUser, setSwitchTargetUser] = useState<typeof personnel[0] | null>(null);
+  const [switchPassword, setSwitchPassword] = useState('');
+  const [showSwitchPassword, setShowSwitchPassword] = useState(false);
+  const [switchError, setSwitchError] = useState('');
+  const [switchSuccessMsg, setSwitchSuccessMsg] = useState('');
 
   const userDropdownRef = useRef<HTMLDivElement>(null);
   const notifDropdownRef = useRef<HTMLDivElement>(null);
@@ -79,6 +90,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({ setIsMobileOpen }) => {
       case 'evidence': return '📎 คลังจัดเก็บเอกสารและหลักฐานการดำเนินงาน';
       case 'reports': return '📑 ศูนย์จัดทำรายงานและส่งออกข้อมูล (Report Center)';
       case 'epidem': return '🩺 ระบบงานระบาดวิทยา รพ.โพนนาแก้ว (Epidem System)';
+      case 'health_promotion': return '🏃 งานส่งเสริมสุขภาพและกิจกรรมทางกาย (Health Promotion & Running)';
       case 'notifications': return '🔔 ศูนย์การแจ้งเตือนงานและตัวชี้วัด';
       case 'settings': return '⚙️ ตั้งค่าระบบและการเชื่อมต่อ Firebase';
       default: return 'ระบบบริหารงานกลุ่มงานบริการด้านปฐมภูมิและองค์รวม';
@@ -314,8 +326,13 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({ setIsMobileOpen }) => {
                     <button
                       key={user.id}
                       onClick={() => {
-                        switchUser(user.id);
                         setIsUserDropdownOpen(false);
+                        if (!isSelected) {
+                          setSwitchTargetUser(user);
+                          setSwitchPassword('');
+                          setSwitchError('');
+                          setSwitchSuccessMsg('');
+                        }
                       }}
                       className={`w-full text-left px-4 py-2 hover:bg-slate-50 flex items-center justify-between transition cursor-pointer ${isSelected ? 'bg-blue-50/60' : ''}`}
                     >
@@ -328,7 +345,11 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({ setIsMobileOpen }) => {
                           <span className="font-mono text-slate-400">@{user.username}</span> • {user.position}
                         </p>
                       </div>
-                      {isSelected && <Check className="w-4 h-4 text-blue-600 shrink-0" />}
+                      {isSelected ? (
+                        <Check className="w-4 h-4 text-blue-600 shrink-0" />
+                      ) : (
+                        <Lock className="w-3.5 h-3.5 text-slate-300 shrink-0 hover:text-slate-500" />
+                      )}
                     </button>
                   );
                 })}
@@ -352,6 +373,144 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({ setIsMobileOpen }) => {
         </div>
 
       </div>
+
+      {/* Password Verification Modal for Switching Users */}
+      {switchTargetUser && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-md w-full overflow-hidden animate-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center">
+                  <Lock className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-white">ยืนยันรหัสผ่านเพื่อสลับบัญชี</h3>
+                  <p className="text-[11px] text-slate-300">ระบบความปลอดภัย โรงพยาบาลโพนนาแก้ว</p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setSwitchTargetUser(null);
+                  setSwitchPassword('');
+                  setSwitchError('');
+                  setSwitchSuccessMsg('');
+                }}
+                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Target User Info Card */}
+            <div className="p-6 space-y-4">
+              <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-blue-600 text-white font-bold text-sm flex items-center justify-center shadow-xs shrink-0">
+                  {switchTargetUser.name.slice(0, 2)}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="font-bold text-slate-800 text-sm truncate">{switchTargetUser.name}</p>
+                    <RoleBadge role={switchTargetUser.role} />
+                  </div>
+                  <p className="text-xs text-slate-600 truncate mt-0.5">{switchTargetUser.position}</p>
+                  <p className="text-[11px] font-mono text-slate-400 mt-0.5">ชื่อผู้ใช้: @{switchTargetUser.username}</p>
+                </div>
+              </div>
+
+              <div className="text-xs text-slate-600 leading-relaxed bg-amber-50/70 border border-amber-200/80 p-3 rounded-xl flex items-start gap-2">
+                <Shield className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                <span>
+                  ผู้ใช้งานปัจจุบันไม่สามารถสลับเป็นบัญชีอื่นได้โดยตรง <strong>กรุณากรอกรหัสผ่านของ &quot;{switchTargetUser.name}&quot;</strong> เพื่อยืนยันตัวตน
+                </span>
+              </div>
+
+              {switchError && (
+                <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 font-medium flex items-center gap-2 animate-in fade-in">
+                  <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                  <span>{switchError}</span>
+                </div>
+              )}
+
+              {switchSuccessMsg && (
+                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-700 font-bold flex items-center gap-2 animate-in fade-in">
+                  <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>{switchSuccessMsg}</span>
+                </div>
+              )}
+
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (!switchTargetUser) return;
+                  setSwitchError('');
+                  const res = switchUserWithPassword(switchTargetUser.id, switchPassword);
+                  if (res.success) {
+                    setSwitchSuccessMsg(`สลับเข้าสู่ระบบสำเร็จ กำลังโหลดข้อมูล...`);
+                    setTimeout(() => {
+                      setSwitchTargetUser(null);
+                      setSwitchPassword('');
+                      setSwitchSuccessMsg('');
+                    }, 600);
+                  } else {
+                    setSwitchError(res.message || 'รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง');
+                  }
+                }}
+                className="space-y-4"
+              >
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    รหัสผ่านของบัญชีนี้ (Password)
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showSwitchPassword ? 'text' : 'password'}
+                      value={switchPassword}
+                      onChange={(e) => setSwitchPassword(e.target.value)}
+                      placeholder="กรอกรหัสผ่าน..."
+                      autoFocus
+                      required
+                      className="w-full pl-3.5 pr-10 py-2.5 bg-white border border-slate-300 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowSwitchPassword(!showSwitchPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                    >
+                      {showSwitchPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    * สามารถดูรหัสผ่านได้จากหน้ารายชื่อบุคลากร (สำหรับผู้ดูแลระบบ)
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSwitchTargetUser(null);
+                      setSwitchPassword('');
+                      setSwitchError('');
+                      setSwitchSuccessMsg('');
+                    }}
+                    className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition cursor-pointer"
+                  >
+                    ยกเลิก
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-md shadow-emerald-600/20 transition flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <KeyRound className="w-4 h-4" />
+                    <span>ยืนยันและสลับบัญชี</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 };

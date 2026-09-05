@@ -15,7 +15,8 @@ import {
   Settings, 
   X,
   Stethoscope,
-  Activity
+  Activity,
+  HeartPulse
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -39,6 +40,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, setIsMobileOpen 
     { id: 'evidence', label: 'หลักฐานงาน', icon: Paperclip },
     { id: 'reports', label: 'รายงานสรุป', icon: FileText },
     { id: 'epidem', label: 'ระบบระบาดวิทยา', icon: Activity, badge: 'Epidem', badgeColor: 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' },
+    { id: 'health_promotion', label: 'งานส่งเสริมสุขภาพ', icon: HeartPulse, badge: 'วิ่ง', badgeColor: 'bg-amber-500/20 text-amber-400 border border-amber-500/30' },
     { id: 'notifications', label: 'การแจ้งเตือน', icon: Bell, badge: unreadNotificationsCount > 0 ? unreadNotificationsCount : undefined, badgeColor: 'bg-red-500 text-white animate-pulse' },
     { id: 'settings', label: 'ตั้งค่าระบบ', icon: Settings },
   ];
