@@ -25,7 +25,9 @@ import {
   FileCheck2,
   Users,
   Award,
-  FolderKanban
+  FolderKanban,
+  Baby,
+  ExternalLink
 } from 'lucide-react';
 import { 
   ResponsiveContainer, 
@@ -494,6 +496,47 @@ export const DashboardView: React.FC = () => {
             </div>
             <div className="absolute -right-2 -bottom-2 opacity-10 text-emerald-200 pointer-events-none">
               <Activity className="w-24 h-24" />
+            </div>
+          </div>
+
+          {/* External ANC Quick Access Card */}
+          <div className="bg-gradient-to-br from-pink-700 via-rose-700 to-slate-900 text-white p-5 rounded-2xl shadow-md relative overflow-hidden flex flex-col justify-between">
+            <div className="relative z-10">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-pink-200 flex items-center gap-1.5">
+                  <Baby className="w-3.5 h-3.5 text-pink-300" />
+                  งานอนามัยแม่และเด็ก (กลุ่มงาน 03)
+                </span>
+                <span className="text-[10px] bg-pink-500/30 text-pink-200 px-2 py-0.5 rounded-full border border-pink-400/30 font-semibold">
+                  ANC V.1
+                </span>
+              </div>
+              <h4 className="text-base font-bold mt-2 text-white">ระบบงาน ANC คลินิกฝากครรภ์</h4>
+              <p className="text-xs text-pink-100 mt-1 leading-relaxed">
+                ระบบบันทึกและติดตามหญิงตั้งครรภ์ รพ.โพนนาแก้ว • มาตรฐาน 5 ครั้ง W.H.O.
+              </p>
+              
+              <div className="mt-3 flex items-center gap-2">
+                <button
+                  onClick={() => setActiveTab('anc')}
+                  className="flex-1 bg-white hover:bg-pink-50 text-pink-900 text-xs font-bold px-3.5 py-2 rounded-xl shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+                >
+                  <Baby className="w-3.5 h-3.5 text-pink-700" />
+                  <span>เข้าสู่หน้าระบบงาน ANC</span>
+                </button>
+                <a
+                  href="https://anc-pnk-hospital-v-1.vercel.app/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 bg-pink-900/60 hover:bg-pink-800 text-pink-200 hover:text-white rounded-xl border border-pink-400/30 transition flex items-center justify-center cursor-pointer"
+                  title="เปิดในแท็บใหม่"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </a>
+              </div>
+            </div>
+            <div className="absolute -right-2 -bottom-2 opacity-10 text-pink-200 pointer-events-none">
+              <Baby className="w-24 h-24" />
             </div>
           </div>
 
