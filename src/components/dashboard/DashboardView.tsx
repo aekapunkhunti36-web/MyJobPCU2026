@@ -27,6 +27,7 @@ import {
   Award,
   FolderKanban,
   Baby,
+  Network,
   ExternalLink
 } from 'lucide-react';
 import { 
@@ -537,6 +538,47 @@ export const DashboardView: React.FC = () => {
             </div>
             <div className="absolute -right-2 -bottom-2 opacity-10 text-pink-200 pointer-events-none">
               <Baby className="w-24 h-24" />
+            </div>
+          </div>
+
+          {/* External IT PCU Data Exchange Card */}
+          <div className="bg-gradient-to-br from-cyan-700 via-sky-700 to-indigo-950 text-white p-5 rounded-2xl shadow-md relative overflow-hidden flex flex-col justify-between">
+            <div className="relative z-10">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-cyan-200 flex items-center gap-1.5">
+                  <Network className="w-3.5 h-3.5 text-cyan-300" />
+                  สารสนเทศและข้อมูลคุณภาพ (กลุ่มงาน 12)
+                </span>
+                <span className="text-[10px] bg-cyan-500/30 text-cyan-200 px-2 py-0.5 rounded-full border border-cyan-400/30 font-semibold">
+                  LAN Server
+                </span>
+              </div>
+              <h4 className="text-base font-bold mt-2 text-white">งาน IT PCU Data Exchange</h4>
+              <p className="text-xs text-cyan-100 mt-1 leading-relaxed">
+                ระบบแลกเปลี่ยนข้อมูลสุขภาพปฐมภูมิ เครือข่าย รพ.สต. • 192.168.0.244
+              </p>
+              
+              <div className="mt-3 flex items-center gap-2">
+                <button
+                  onClick={() => setActiveTab('it_pcu')}
+                  className="flex-1 bg-white hover:bg-cyan-50 text-cyan-900 text-xs font-bold px-3.5 py-2 rounded-xl shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+                >
+                  <Network className="w-3.5 h-3.5 text-cyan-700" />
+                  <span>เข้าสู่หน้าระบบ IT PCU</span>
+                </button>
+                <a
+                  href="http://192.168.0.244/data-exchange/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 bg-cyan-900/60 hover:bg-cyan-800 text-cyan-200 hover:text-white rounded-xl border border-cyan-400/30 transition flex items-center justify-center cursor-pointer"
+                  title="เปิดในแท็บใหม่ (LAN)"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </a>
+              </div>
+            </div>
+            <div className="absolute -right-2 -bottom-2 opacity-10 text-cyan-200 pointer-events-none">
+              <Network className="w-24 h-24" />
             </div>
           </div>
 

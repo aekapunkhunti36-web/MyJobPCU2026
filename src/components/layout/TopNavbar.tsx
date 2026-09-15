@@ -92,6 +92,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({ setIsMobileOpen }) => {
       case 'epidem': return '🩺 ระบบงานระบาดวิทยา รพ.โพนนาแก้ว (Epidem System)';
       case 'health_promotion': return '🏃 งานส่งเสริมสุขภาพและกิจกรรมทางกาย (Health Promotion & Running)';
       case 'anc': return '🤱 ระบบงาน ANC คลินิกฝากครรภ์และอนามัยแม่และเด็ก รพ.โพนนาแก้ว';
+      case 'it_pcu': return '💻 งาน IT PCU • ระบบแลกเปลี่ยนข้อมูลสุขภาพ รพ.โพนนาแก้ว (PCU Data Exchange)';
       case 'notifications': return '🔔 ศูนย์การแจ้งเตือนงานและตัวชี้วัด';
       case 'settings': return '⚙️ ตั้งค่าระบบและการเชื่อมต่อ Firebase';
       default: return 'ระบบบริหารงานกลุ่มงานบริการด้านปฐมภูมิและองค์รวม';

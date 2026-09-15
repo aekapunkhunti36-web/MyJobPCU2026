@@ -16,6 +16,7 @@ import { NotificationsView } from './components/notifications/NotificationsView'
 import { EpidemView } from './components/epidem/EpidemView';
 import { HealthPromotionView } from './components/healthPromotion/HealthPromotionView';
 import { AncView } from './components/anc/AncView';
+import { ItPcuView } from './components/itPcu/ItPcuView';
 import { SettingsView } from './components/settings/SettingsView';
 import { TaskFormModal } from './components/tasks/TaskFormModal';
 import { TaskDetailModal } from './components/tasks/TaskDetailModal';
@@ -64,6 +65,8 @@ const AppContent: React.FC = () => {
         return <HealthPromotionView />;
       case 'anc':
         return <AncView />;
+      case 'it_pcu':
+        return <ItPcuView />;
       case 'notifications':
         return <NotificationsView />;
       case 'settings':
