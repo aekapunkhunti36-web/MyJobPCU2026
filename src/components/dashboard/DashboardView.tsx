@@ -28,6 +28,7 @@ import {
   FolderKanban,
   Baby,
   Network,
+  TestTube2,
   ExternalLink
 } from 'lucide-react';
 import { 
@@ -579,6 +580,47 @@ export const DashboardView: React.FC = () => {
             </div>
             <div className="absolute -right-2 -bottom-2 opacity-10 text-cyan-200 pointer-events-none">
               <Network className="w-24 h-24" />
+            </div>
+          </div>
+
+          {/* External FIT Test Quick Access Card */}
+          <div className="bg-gradient-to-br from-rose-700 via-pink-800 to-slate-900 text-white p-5 rounded-2xl shadow-md relative overflow-hidden flex flex-col justify-between">
+            <div className="relative z-10">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-rose-200 flex items-center gap-1.5">
+                  <TestTube2 className="w-3.5 h-3.5 text-rose-300" />
+                  ควบคุมโรคและระบาด (กลุ่มงาน 04)
+                </span>
+                <span className="text-[10px] bg-rose-500/30 text-rose-200 px-2 py-0.5 rounded-full border border-rose-400/30 font-semibold">
+                  FIT Test 2027
+                </span>
+              </div>
+              <h4 className="text-base font-bold mt-2 text-white">งานคัดกรองมะเร็งลำไส้ใหญ่</h4>
+              <p className="text-xs text-rose-100 mt-1 leading-relaxed">
+                ระบบคัดกรองมะเร็งลำไส้ใหญ่และไส้ตรง รพ.โพนนาแก้ว • กลุ่มอายุ 50-70 ปี
+              </p>
+              
+              <div className="mt-3 flex items-center gap-2">
+                <button
+                  onClick={() => setActiveTab('fit_test')}
+                  className="flex-1 bg-white hover:bg-rose-50 text-rose-900 text-xs font-bold px-3.5 py-2 rounded-xl shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+                >
+                  <TestTube2 className="w-3.5 h-3.5 text-rose-700" />
+                  <span>เข้าสู่หน้าระบบ FIT Test</span>
+                </button>
+                <a
+                  href="https://cacolonpnkhos2027.vercel.app/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 bg-rose-900/60 hover:bg-rose-800 text-rose-200 hover:text-white rounded-xl border border-rose-400/30 transition flex items-center justify-center cursor-pointer"
+                  title="เปิดในแท็บใหม่"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </a>
+              </div>
+            </div>
+            <div className="absolute -right-2 -bottom-2 opacity-10 text-rose-200 pointer-events-none">
+              <TestTube2 className="w-24 h-24" />
             </div>
           </div>
 

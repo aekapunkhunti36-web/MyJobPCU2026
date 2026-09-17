@@ -20,6 +20,7 @@ export type NavTab =
   | 'health_promotion'
   | 'anc'
   | 'it_pcu'
+  | 'fit_test'
   | 'settings';
 
 interface AppContextType {
@@ -129,7 +130,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const saved = StorageService.getActiveTab() as NavTab | null;
     const validTabs: NavTab[] = [
       'dashboard', 'projects', 'tasks', 'workgroups', 'personnel',
-      'calendar', 'kpi', 'evidence', 'reports', 'epidem', 'health_promotion', 'anc', 'it_pcu', 'notifications', 'settings'
+      'calendar', 'kpi', 'evidence', 'reports', 'epidem', 'health_promotion', 'anc', 'it_pcu', 'fit_test', 'notifications', 'settings'
     ];
     if (saved && validTabs.includes(saved)) {
       return saved;

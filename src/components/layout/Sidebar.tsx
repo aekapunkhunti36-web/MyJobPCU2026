@@ -18,7 +18,8 @@ import {
   Activity,
   HeartPulse,
   Baby,
-  Network
+  Network,
+  TestTube2
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -45,6 +46,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, setIsMobileOpen 
     { id: 'health_promotion', label: 'งานส่งเสริมสุขภาพ', icon: HeartPulse, badge: 'วิ่ง', badgeColor: 'bg-amber-500/20 text-amber-400 border border-amber-500/30' },
     { id: 'anc', label: 'งาน ANC (ฝากครรภ์)', icon: Baby, badge: 'ANC', badgeColor: 'bg-pink-500/20 text-pink-400 border border-pink-500/30' },
     { id: 'it_pcu', label: 'งาน IT PCU', icon: Network, badge: 'Exchange', badgeColor: 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' },
+    { id: 'fit_test', label: 'คัดกรอง FIT Test', icon: TestTube2, badge: 'FIT', badgeColor: 'bg-rose-500/20 text-rose-400 border border-rose-500/30' },
     { id: 'notifications', label: 'การแจ้งเตือน', icon: Bell, badge: unreadNotificationsCount > 0 ? unreadNotificationsCount : undefined, badgeColor: 'bg-red-500 text-white animate-pulse' },
     { id: 'settings', label: 'ตั้งค่าระบบ', icon: Settings },
   ];

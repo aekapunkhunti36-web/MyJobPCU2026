@@ -120,6 +120,14 @@ export class FirestoreService {
         });
         await batch.commit();
         anySeeded = true;
+      } else {
+        const usr4Doc = personnelSnap.docs.find(d => d.id === 'usr-04');
+        if (usr4Doc && usr4Doc.data()?.name === 'นายธนกฤต แสนสุข') {
+          const freshUsr4 = initialPersonnel.find(p => p.id === 'usr-04');
+          if (freshUsr4) {
+            await setDoc(doc(db, COLLECTIONS.PERSONNEL, 'usr-04'), cleanData(freshUsr4), { merge: true });
+          }
+        }
       }
 
       // 3. Projects

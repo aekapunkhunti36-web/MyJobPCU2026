@@ -71,6 +71,17 @@ export class StorageService {
         // Ensure username and password exist on legacy stored users
         const updated = parsed.map(user => {
           const defaultUser = initialPersonnel.find(u => u.id === user.id);
+          if (user.id === 'usr-04' && (user.name === 'นายธนกฤต แสนสุข' || !user.phone || user.phone === '087-987-6543')) {
+            return {
+              ...user,
+              name: defaultUser?.name || 'นายเอกพันธ์ ขันติ',
+              username: defaultUser?.username || 'aekapun.k',
+              phone: defaultUser?.phone || '081-197-4316',
+              responsibility: defaultUser?.responsibility || user.responsibility,
+              email: defaultUser?.email || user.email,
+              password: user.password || defaultUser?.password || 'password123'
+            };
+          }
           return {
             ...user,
             username: user.username || defaultUser?.username || user.email.split('@')[0] || user.id,
